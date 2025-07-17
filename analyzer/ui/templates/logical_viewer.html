@@ -1,0 +1,1511 @@
+{% extends "base.html" %}
+
+{% block title %}Logical Dependency Viewer - {{ super() }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .upload-area {
+        text-align: center;
+        padding: 60px 30px;
+        border: 3px dashed #ddd;
+        margin: 30px 0;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: #f8f9fa;
+    }
+
+    .upload-area:hover, .upload-area.dragover {
+        border-color: #0d6efd;
+        background: #e7f3ff;
+    }
+
+    .upload-area h3 {
+        color: #333;
+        font-size: 1.8em;
+        margin-bottom: 15px;
+    }
+
+    .upload-area p {
+        color: #666;
+        font-size: 1.1em;
+        margin-bottom: 25px;
+    }
+
+    .results {
+        display: none;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat {
+        background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+        padding: 25px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid #e1e8ff;
+    }
+
+    .stat h4 {
+        color: #0d6efd;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .stat span {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .logical-stats {
+        background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+        border: 1px solid #b3d9ff;
+    }
+
+    .logical-stats h4 {
+        color: #0066cc;
+    }
+
+    .network-container {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #fafafa;
+        margin-top: 15px;
+        min-height: 600px;
+    }
+
+    .legend {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 15px 0;
+        border: 1px solid #dee2e6;
+    }
+
+    .legend-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .legend-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9em;
+    }
+
+    .legend-line {
+        width: 20px;
+        height: 2px;
+    }
+
+    .legend-circle {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+    }
+
+    .domain-filter {
+        margin: 15px 0;
+        padding: 15px;
+        background: #e7f3ff;
+        border-radius: 8px;
+        border-left: 4px solid #0d6efd;
+    }
+
+    .domain-filter h5 {
+        color: #0d6efd;
+        margin-bottom: 10px;
+    }
+
+    .domain-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .domain-badge {
+        background: #fff;
+        border: 1px solid #0d6efd;
+        color: #0d6efd;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.8em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .domain-badge:hover {
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    .domain-badge.active {
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    .logical-info {
+        background: #f0f8ff;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #0066cc;
+        margin: 20px 0;
+    }
+
+    .logical-info h3 {
+        color: #0066cc;
+        margin-bottom: 15px;
+    }
+
+    .abstraction-levels {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .abstraction-level {
+        background: #fff;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #b3d9ff;
+        text-align: center;
+    }
+
+    .abstraction-level h6 {
+        color: #0066cc;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+    }
+
+    .abstraction-level .count {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .view-controls {
+        margin: 15px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .view-controls .btn-group {
+        margin-right: 10px;
+    }
+
+    .flow-type-filter {
+        margin: 15px 0;
+        padding: 15px;
+        background: #fff3cd;
+        border-radius: 8px;
+        border-left: 4px solid #ffc107;
+    }
+
+    .flow-type-filter h5 {
+        color: #8b6914;
+        margin-bottom: 10px;
+    }
+
+    .flow-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .flow-badge {
+        background: #fff;
+        border: 1px solid #ffc107;
+        color: #8b6914;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.8em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .flow-badge:hover {
+        background: #ffc107;
+        color: #fff;
+    }
+
+    .flow-badge.active {
+        background: #ffc107;
+        color: #fff;
+    }
+
+    .transformation-info {
+        background: #e8f5e8;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #28a745;
+        margin: 15px 0;
+    }
+
+    .transformation-info h5 {
+        color: #155724;
+        margin-bottom: 10px;
+    }
+
+    .transformation-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+    }
+
+    .transformation-item {
+        background: #fff;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #28a745;
+        font-size: 0.9em;
+    }
+
+    .analysis-type-indicator {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #6f42c1;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8em;
+        font-weight: 600;
+    }
+
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #f5c6cb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-diagram-3"></i> Logical Dependency Viewer</h1>
+            <div>
+                <span class="badge bg-primary">Logical Analysis</span>
+                <span class="badge bg-info">Enhanced Viewer</span>
+            </div>
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <h3>Logical Dependency Visualization</h3>
+            <p>Upload a logical analysis JSON file to visualize abstract business dependencies</p>
+            <input type="file" id="fileInput" accept=".json" style="display: none;">
+            <button class="btn btn-primary btn-lg" onclick="document.getElementById('fileInput').click()">
+                <i class="bi bi-file-earmark-arrow-up"></i> Choose JSON File
+            </button>
+            
+            <div class="mt-4">
+                <p class="text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    To generate logical analysis, use: <code>python -m analyzer.cli.main logical-analyze &lt;project&gt; &lt;output.json&gt;</code>
+                </p>
+            </div>
+        </div>
+
+        <div id="results" class="results">
+            <div class="analysis-type-indicator">
+                Logical Dependencies
+            </div>
+            
+            <!-- Tabs -->
+            <ul class="nav nav-tabs" id="resultTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                        <i class="bi bi-info-circle"></i> Overview
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="logical-network-tab" data-bs-toggle="tab" data-bs-target="#logical-network" type="button" role="tab">
+                        <i class="bi bi-diagram-3"></i> Logical Network
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="business-domains-tab" data-bs-toggle="tab" data-bs-target="#business-domains" type="button" role="tab">
+                        <i class="bi bi-building"></i> Business Domains
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="data-flows-tab" data-bs-toggle="tab" data-bs-target="#data-flows" type="button" role="tab">
+                        <i class="bi bi-arrow-right-circle"></i> Data Flows
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="technical-view-tab" data-bs-toggle="tab" data-bs-target="#technical-view" type="button" role="tab">
+                        <i class="bi bi-code-slash"></i> Technical View
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="raw-tab" data-bs-toggle="tab" data-bs-target="#raw" type="button" role="tab">
+                        <i class="bi bi-code"></i> Raw Data
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="resultTabsContent">
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="p-4">
+                        <div class="stats">
+                            <div class="stat logical-stats">
+                                <h4>Logical Actors</h4>
+                                <span id="logicalActors">0</span>
+                            </div>
+                            <div class="stat logical-stats">
+                                <h4>Business Domains</h4>
+                                <span id="businessDomains">0</span>
+                            </div>
+                            <div class="stat logical-stats">
+                                <h4>Logical Flows</h4>
+                                <span id="logicalFlows">0</span>
+                            </div>
+                            <div class="stat logical-stats">
+                                <h4>Data Transformations</h4>
+                                <span id="dataTransformations">0</span>
+                            </div>
+                            <div class="stat">
+                                <h4>Functions</h4>
+                                <span id="functionsFound">0</span>
+                            </div>
+                            <div class="stat">
+                                <h4>Files</h4>
+                                <span id="filesAnalyzed">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="logical-info" id="logicalInfo">
+                            <h3>Logical Analysis Information</h3>
+                            <div id="logicalContent"></div>
+                        </div>
+                        
+                        <div class="abstraction-levels" id="abstractionLevels">
+                            <div class="abstraction-level">
+                                <h6>Domain Services</h6>
+                                <div class="count" id="domainServices">0</div>
+                            </div>
+                            <div class="abstraction-level">
+                                <h6>Business Entities</h6>
+                                <div class="count" id="businessEntities">0</div>
+                            </div>
+                            <div class="abstraction-level">
+                                <h6>Integration Points</h6>
+                                <div class="count" id="integrationPoints">0</div>
+                            </div>
+                            <div class="abstraction-level">
+                                <h6>Workflow Orchestrators</h6>
+                                <div class="count" id="workflowOrchestrators">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logical Network Tab -->
+                <div class="tab-pane fade" id="logical-network" role="tabpanel">
+                    <div class="p-4">
+                        <div class="view-controls">
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-outline-primary" id="resetZoomLogical">
+                                    <i class="bi bi-zoom-out"></i> Reset Zoom
+                                </button>
+                                <button class="btn btn-outline-secondary" id="toggleLabelsLogical">
+                                    <i class="bi bi-tag"></i> Toggle Labels
+                                </button>
+                            </div>
+                            <select id="layoutSelectLogical" class="form-select d-inline-block" style="width: auto;">
+                                <option value="force">Force Layout</option>
+                                <option value="tree">Tree Layout</option>
+                                <option value="cluster">Cluster Layout</option>
+                                <option value="sankey">Sankey Layout</option>
+                            </select>
+                        </div>
+                        
+                        <div class="domain-filter">
+                            <h5>Filter by Business Domain</h5>
+                            <div class="domain-badges" id="domainBadges">
+                                <div class="domain-badge active" data-domain="all">All Domains</div>
+                            </div>
+                        </div>
+                        
+                        <div class="legend">
+                            <div class="legend-title">Logical Actor Types</div>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <div class="legend-circle" style="background: #0066cc;"></div>
+                                    Domain Services
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-circle" style="background: #28a745;"></div>
+                                    Business Entities
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-circle" style="background: #ffc107;"></div>
+                                    Integration Points
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-circle" style="background: #6f42c1;"></div>
+                                    Workflow Orchestrators
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-circle" style="background: #dc3545;"></div>
+                                    Data Transformers
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="logicalNetworkView" class="network-container"></div>
+                    </div>
+                </div>
+
+                <!-- Business Domains Tab -->
+                <div class="tab-pane fade" id="business-domains" role="tabpanel">
+                    <div class="p-4">
+                        <div class="view-controls">
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-outline-primary" id="resetZoomDomains">
+                                    <i class="bi bi-zoom-out"></i> Reset Zoom
+                                </button>
+                                <button class="btn btn-outline-secondary" id="toggleLabelsDomains">
+                                    <i class="bi bi-tag"></i> Toggle Labels
+                                </button>
+                            </div>
+                            <select id="layoutSelectDomains" class="form-select d-inline-block" style="width: auto;">
+                                <option value="force">Force Layout</option>
+                                <option value="cluster">Cluster Layout</option>
+                                <option value="sankey">Sankey Layout</option>
+                            </select>
+                        </div>
+                        
+                        <div class="legend">
+                            <div class="legend-title">Business Domain View</div>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <div class="legend-circle" style="background: #0066cc;"></div>
+                                    Domain Boundaries
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-line" style="background: #28a745;"></div>
+                                    Domain Interactions
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="businessDomainsView" class="network-container"></div>
+                    </div>
+                </div>
+
+                <!-- Data Flows Tab -->
+                <div class="tab-pane fade" id="data-flows" role="tabpanel">
+                    <div class="p-4">
+                        <div class="view-controls">
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-outline-primary" id="resetZoomFlows">
+                                    <i class="bi bi-zoom-out"></i> Reset Zoom
+                                </button>
+                                <button class="btn btn-outline-secondary" id="toggleLabelsFlows">
+                                    <i class="bi bi-tag"></i> Toggle Labels
+                                </button>
+                            </div>
+                            <select id="layoutSelectFlows" class="form-select d-inline-block" style="width: auto;">
+                                <option value="force">Force Layout</option>
+                                <option value="sankey">Sankey Layout</option>
+                                <option value="tree">Tree Layout</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flow-type-filter">
+                            <h5>Filter by Flow Type</h5>
+                            <div class="flow-badges" id="flowBadges">
+                                <div class="flow-badge active" data-flow="all">All Flows</div>
+                            </div>
+                        </div>
+                        
+                        <div class="transformation-info">
+                            <h5>Data Transformations</h5>
+                            <div class="transformation-list" id="transformationList"></div>
+                        </div>
+                        
+                        <div class="legend">
+                            <div class="legend-title">Flow Types</div>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <div class="legend-line" style="background: #0066cc;"></div>
+                                    Data Flow
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-line" style="background: #28a745;"></div>
+                                    Control Flow
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-line" style="background: #ffc107;"></div>
+                                    Event Flow
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-line" style="background: #dc3545;"></div>
+                                    Business Process
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="dataFlowsView" class="network-container"></div>
+                    </div>
+                </div>
+
+                <!-- Technical View Tab -->
+                <div class="tab-pane fade" id="technical-view" role="tabpanel">
+                    <div class="p-4">
+                        <div class="view-controls">
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-outline-primary" id="resetZoomTechnical">
+                                    <i class="bi bi-zoom-out"></i> Reset Zoom
+                                </button>
+                                <button class="btn btn-outline-secondary" id="toggleLabelsTechnical">
+                                    <i class="bi bi-tag"></i> Toggle Labels
+                                </button>
+                            </div>
+                            <select id="layoutSelectTechnical" class="form-select d-inline-block" style="width: auto;">
+                                <option value="force">Force Layout</option>
+                                <option value="tree">Tree Layout</option>
+                                <option value="cluster">Cluster Layout</option>
+                            </select>
+                        </div>
+                        
+                        <div class="legend">
+                            <div class="legend-title">Technical Components</div>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <div class="legend-circle" style="background: #dc3545;"></div>
+                                    SYS (Systems)
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-circle" style="background: #20c997;"></div>
+                                    MOD (Modules)
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-circle" style="background: #0dcaf0;"></div>
+                                    FUNC (Functions)
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="technicalView" class="network-container"></div>
+                    </div>
+                </div>
+
+                <!-- Raw Data Tab -->
+                <div class="tab-pane fade" id="raw" role="tabpanel">
+                    <div class="p-4">
+                        <pre id="rawData" class="bg-light p-3 rounded" style="max-height: 600px; overflow-y: auto;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+    let currentData = null;
+    let logicalActors = [];
+    let businessDomains = [];
+    let logicalFlows = [];
+    let dataTransformations = [];
+    let activeDomain = 'all';
+    let activeFlowType = 'all';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // Tab functionality
+        setupTabEventListeners();
+        
+        // Check for stored analysis result
+        checkForStoredAnalysis();
+    });
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            handleFile(file);
+        }
+    }
+
+    function handleFile(file) {
+        if (!file.name.endsWith('.json')) {
+            showToast('Please select a JSON file.', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                currentData = JSON.parse(e.target.result);
+                showResults(currentData);
+            } catch (error) {
+                showToast('Error parsing JSON: ' + error.message, 'error');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function showResults(data) {
+        if (!data.nodes || !data.relationships) {
+            showToast('Invalid JSON format. Expected "nodes" and "relationships" arrays.', 'error');
+            return;
+        }
+
+        // Check if this is logical analysis
+        const isLogical = data.metadata && data.metadata.analysis_type === 'logical_dependencies';
+        
+        if (!isLogical) {
+            showToast('This appears to be a physical analysis. Please upload a logical analysis file.', 'warning');
+        }
+
+        document.getElementById('results').style.display = 'block';
+
+        // Extract logical analysis data
+        extractLogicalData(data);
+        
+        // Update statistics
+        updateStatistics(data);
+        
+        // Update logical information
+        updateLogicalInfo(data);
+        
+        // Setup domain and flow filters
+        setupDomainFilters();
+        setupFlowFilters();
+        
+        // Raw data
+        document.getElementById('rawData').textContent = JSON.stringify(data, null, 2);
+
+        showToast('Logical analysis results loaded successfully!', 'success');
+    }
+
+    function extractLogicalData(data) {
+        logicalActors = data.nodes.filter(node => node.type === 'ACTOR' && node.LogicalActor);
+        businessDomains = data.metadata.business_domains || [];
+        
+        // Extract logical flows
+        logicalFlows = data.relationships.filter(rel => 
+            rel.type === 'flow' && rel.LogicalFlow === true
+        );
+        
+        // Extract data transformations
+        dataTransformations = [...new Set(logicalFlows.map(flow => 
+            flow.DataTransformation
+        ).filter(t => t && t !== 'data_transfer'))];
+    }
+
+    function updateStatistics(data) {
+        const stats = data.metadata?.logical_analysis_stats || {};
+        
+        document.getElementById('logicalActors').textContent = stats.logical_actors || 0;
+        document.getElementById('businessDomains').textContent = stats.business_domains || 0;
+        document.getElementById('logicalFlows').textContent = stats.logical_flows || 0;
+        document.getElementById('dataTransformations').textContent = stats.data_transformations || 0;
+        document.getElementById('filesAnalyzed').textContent = stats.files_parsed || 0;
+        document.getElementById('functionsFound').textContent = stats.functions_found || 0;
+        
+        // Abstraction levels
+        document.getElementById('domainServices').textContent = stats.domain_services || 0;
+        document.getElementById('businessEntities').textContent = stats.business_entities || 0;
+        document.getElementById('integrationPoints').textContent = stats.integration_points || 0;
+        document.getElementById('workflowOrchestrators').textContent = stats.workflow_orchestrators || 0;
+    }
+
+    function updateLogicalInfo(data) {
+        let info = '<h4>Analysis Information</h4>';
+        if (data.metadata) {
+            info += `<p><strong>Analysis Type:</strong> ${data.metadata.analysis_type || 'Unknown'}</p>`;
+            info += `<p><strong>Version:</strong> ${data.metadata.analysis_version || 'Unknown'}</p>`;
+            info += `<p><strong>Project:</strong> ${data.metadata.project_path || 'Unknown'}</p>`;
+            if (data.metadata.timestamp) {
+                info += `<p><strong>Analyzed:</strong> ${new Date(data.metadata.timestamp).toLocaleString()}</p>`;
+            }
+        }
+        
+        // Business domains
+        if (businessDomains.length > 0) {
+            info += '<h5>Business Domains</h5>';
+            info += '<div class="domain-badges">';
+            businessDomains.forEach(domain => {
+                info += `<span class="domain-badge">${domain.replace('_', ' ').toUpperCase()}</span>`;
+            });
+            info += '</div>';
+        }
+        
+        document.getElementById('logicalContent').innerHTML = info;
+    }
+
+    function setupDomainFilters() {
+        const domainBadges = document.getElementById('domainBadges');
+        
+        // Add domain badges
+        businessDomains.forEach(domain => {
+            const badge = document.createElement('div');
+            badge.className = 'domain-badge';
+            badge.setAttribute('data-domain', domain);
+            badge.textContent = domain.replace('_', ' ').toUpperCase();
+            badge.addEventListener('click', () => filterByDomain(domain));
+            domainBadges.appendChild(badge);
+        });
+        
+        // Add all domains handler
+        document.querySelector('[data-domain="all"]').addEventListener('click', () => filterByDomain('all'));
+    }
+
+    function setupFlowFilters() {
+        const flowBadges = document.getElementById('flowBadges');
+        
+        // Get unique flow types
+        const flowTypes = [...new Set(logicalFlows.map(flow => flow.FlowType).filter(t => t))];
+        
+        // Add flow badges
+        flowTypes.forEach(flowType => {
+            const badge = document.createElement('div');
+            badge.className = 'flow-badge';
+            badge.setAttribute('data-flow', flowType);
+            badge.textContent = flowType.replace('_', ' ').toUpperCase();
+            badge.addEventListener('click', () => filterByFlowType(flowType));
+            flowBadges.appendChild(badge);
+        });
+        
+        // Add all flows handler
+        document.querySelector('[data-flow="all"]').addEventListener('click', () => filterByFlowType('all'));
+        
+        // Update transformation list
+        const transformationList = document.getElementById('transformationList');
+        dataTransformations.forEach(transformation => {
+            const item = document.createElement('div');
+            item.className = 'transformation-item';
+            item.textContent = transformation.replace('_', ' ').toUpperCase();
+            transformationList.appendChild(item);
+        });
+    }
+
+    function filterByDomain(domain) {
+        activeDomain = domain;
+        
+        // Update active badges
+        document.querySelectorAll('.domain-badge').forEach(badge => {
+            badge.classList.remove('active');
+        });
+        document.querySelector(`[data-domain="${domain}"]`).classList.add('active');
+        
+        // Refresh current view
+        refreshCurrentView();
+    }
+
+    function filterByFlowType(flowType) {
+        activeFlowType = flowType;
+        
+        // Update active badges
+        document.querySelectorAll('.flow-badge').forEach(badge => {
+            badge.classList.remove('active');
+        });
+        document.querySelector(`[data-flow="${flowType}"]`).classList.add('active');
+        
+        // Refresh current view
+        refreshCurrentView();
+    }
+
+    function refreshCurrentView() {
+        const activeTab = document.querySelector('.nav-link.active');
+        if (activeTab) {
+            const tabId = activeTab.getAttribute('data-bs-target');
+            
+            switch(tabId) {
+                case '#logical-network':
+                    createLogicalNetworkView();
+                    break;
+                case '#business-domains':
+                    createBusinessDomainsView();
+                    break;
+                case '#data-flows':
+                    createDataFlowsView();
+                    break;
+                case '#technical-view':
+                    createTechnicalView();
+                    break;
+            }
+        }
+    }
+
+    function setupTabEventListeners() {
+        document.getElementById('logical-network-tab').addEventListener('click', () => {
+            setTimeout(() => createLogicalNetworkView(), 100);
+        });
+
+        document.getElementById('business-domains-tab').addEventListener('click', () => {
+            setTimeout(() => createBusinessDomainsView(), 100);
+        });
+
+        document.getElementById('data-flows-tab').addEventListener('click', () => {
+            setTimeout(() => createDataFlowsView(), 100);
+        });
+
+        document.getElementById('technical-view-tab').addEventListener('click', () => {
+            setTimeout(() => createTechnicalView(), 100);
+        });
+    }
+
+    function createLogicalNetworkView() {
+        if (!currentData) return;
+        
+        const container = d3.select('#logicalNetworkView');
+        container.selectAll('*').remove();
+
+        const width = 800, height = 600;
+        const svg = container.append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on('zoom', (event) => {
+                g.attr('transform', event.transform);
+            });
+
+        svg.call(zoom);
+        const g = svg.append('g');
+
+        // Filter nodes and links based on domain
+        let filteredNodes = logicalActors;
+        if (activeDomain !== 'all') {
+            filteredNodes = logicalActors.filter(actor => 
+                actor.BusinessDomain === activeDomain
+            );
+        }
+
+        // Map nodes for D3
+        const nodes = filteredNodes.map(actor => ({
+            id: actor.uuid,
+            name: actor.Name,
+            type: actor.ActorType,
+            domain: actor.BusinessDomain,
+            description: actor.Descr
+        }));
+
+        // Filter and map logical flows
+        const nodeIds = new Set(nodes.map(n => n.id));
+        const links = logicalFlows.filter(flow => 
+            nodeIds.has(flow.source) && nodeIds.has(flow.target)
+        ).map(flow => ({
+            source: flow.source,
+            target: flow.target,
+            type: flow.FlowType,
+            description: flow.FlowDescr
+        }));
+
+        // Color mapping for logical actor types
+        const nodeColors = {
+            'domain_service': '#0066cc',
+            'business_entity': '#28a745',
+            'integration_point': '#ffc107',
+            'workflow_orchestrator': '#6f42c1',
+            'data_transformer': '#dc3545',
+            'validation_service': '#17a2b8',
+            'persistence_layer': '#6c757d',
+            'presentation_layer': '#fd7e14'
+        };
+
+        const simulation = d3.forceSimulation(nodes)
+            .force('link', d3.forceLink(links).id(d => d.id).distance(150))
+            .force('charge', d3.forceManyBody().strength(-400))
+            .force('center', d3.forceCenter(width/2, height/2))
+            .force('collision', d3.forceCollide().radius(25));
+
+        // Links
+        const link = g.append('g')
+            .selectAll('line')
+            .data(links)
+            .enter()
+            .append('line')
+            .attr('stroke', '#666')
+            .attr('stroke-width', 3)
+            .attr('stroke-opacity', 0.8);
+
+        // Nodes
+        const node = g.append('g')
+            .selectAll('circle')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('r', 15)
+            .attr('fill', d => nodeColors[d.type] || '#999')
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 3)
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        // Labels
+        const labels = g.append('g')
+            .selectAll('text')
+            .data(nodes)
+            .enter()
+            .append('text')
+            .text(d => d.name)
+            .attr('font-size', 12)
+            .attr('text-anchor', 'middle')
+            .attr('dy', -20)
+            .attr('fill', '#333')
+            .attr('font-weight', 'bold')
+            .style('pointer-events', 'none');
+
+        // Tooltips
+        node.append('title')
+            .text(d => `${d.name}\nType: ${d.type}\nDomain: ${d.domain}\n${d.description}`);
+
+        link.append('title')
+            .text(d => `${d.type}: ${d.description}`);
+
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        });
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+    }
+
+    function createBusinessDomainsView() {
+        if (!currentData) return;
+        
+        const container = d3.select('#businessDomainsView');
+        container.selectAll('*').remove();
+
+        const width = 800, height = 600;
+        const svg = container.append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on('zoom', (event) => {
+                g.attr('transform', event.transform);
+            });
+
+        svg.call(zoom);
+        const g = svg.append('g');
+
+        // Group actors by domain
+        const domainGroups = d3.group(logicalActors, d => d.BusinessDomain);
+        
+        // Create domain nodes
+        const domainNodes = Array.from(domainGroups, ([domain, actors]) => ({
+            id: domain,
+            name: domain.replace('_', ' ').toUpperCase(),
+            type: 'domain',
+            actorCount: actors.length,
+            actors: actors
+        }));
+
+        // Create inter-domain links based on logical flows
+        const domainLinks = [];
+        logicalFlows.forEach(flow => {
+            const sourceActor = logicalActors.find(a => a.uuid === flow.source);
+            const targetActor = logicalActors.find(a => a.uuid === flow.target);
+            
+            if (sourceActor && targetActor && sourceActor.BusinessDomain !== targetActor.BusinessDomain) {
+                const existingLink = domainLinks.find(l => 
+                    (l.source === sourceActor.BusinessDomain && l.target === targetActor.BusinessDomain) ||
+                    (l.source === targetActor.BusinessDomain && l.target === sourceActor.BusinessDomain)
+                );
+                
+                if (!existingLink) {
+                    domainLinks.push({
+                        source: sourceActor.BusinessDomain,
+                        target: targetActor.BusinessDomain,
+                        type: 'domain_interaction'
+                    });
+                }
+            }
+        });
+
+        const simulation = d3.forceSimulation(domainNodes)
+            .force('link', d3.forceLink(domainLinks).id(d => d.id).distance(200))
+            .force('charge', d3.forceManyBody().strength(-800))
+            .force('center', d3.forceCenter(width/2, height/2))
+            .force('collision', d3.forceCollide().radius(60));
+
+        // Links
+        const link = g.append('g')
+            .selectAll('line')
+            .data(domainLinks)
+            .enter()
+            .append('line')
+            .attr('stroke', '#28a745')
+            .attr('stroke-width', 4)
+            .attr('stroke-opacity', 0.7);
+
+        // Nodes
+        const node = g.append('g')
+            .selectAll('circle')
+            .data(domainNodes)
+            .enter()
+            .append('circle')
+            .attr('r', d => Math.max(30, d.actorCount * 8))
+            .attr('fill', '#0066cc')
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 4)
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        // Labels
+        const labels = g.append('g')
+            .selectAll('text')
+            .data(domainNodes)
+            .enter()
+            .append('text')
+            .text(d => d.name)
+            .attr('font-size', 14)
+            .attr('text-anchor', 'middle')
+            .attr('dy', 5)
+            .attr('fill', '#fff')
+            .attr('font-weight', 'bold')
+            .style('pointer-events', 'none');
+
+        // Tooltips
+        node.append('title')
+            .text(d => `${d.name}\nActors: ${d.actorCount}\nComponents: ${d.actors.map(a => a.Name).join(', ')}`);
+
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        });
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+    }
+
+    function createDataFlowsView() {
+        if (!currentData) return;
+        
+        const container = d3.select('#dataFlowsView');
+        container.selectAll('*').remove();
+
+        const width = 800, height = 600;
+        const svg = container.append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on('zoom', (event) => {
+                g.attr('transform', event.transform);
+            });
+
+        svg.call(zoom);
+        const g = svg.append('g');
+
+        // Filter flows by type
+        let filteredFlows = logicalFlows;
+        if (activeFlowType !== 'all') {
+            filteredFlows = logicalFlows.filter(flow => flow.FlowType === activeFlowType);
+        }
+
+        // Get nodes involved in flows
+        const flowNodeIds = new Set();
+        filteredFlows.forEach(flow => {
+            flowNodeIds.add(flow.source);
+            flowNodeIds.add(flow.target);
+        });
+
+        const flowNodes = logicalActors.filter(actor => flowNodeIds.has(actor.uuid));
+
+        // Map nodes for D3
+        const nodes = flowNodes.map(actor => ({
+            id: actor.uuid,
+            name: actor.Name,
+            type: actor.ActorType,
+            domain: actor.BusinessDomain,
+            description: actor.Descr
+        }));
+
+        // Map flows
+        const links = filteredFlows.map(flow => ({
+            source: flow.source,
+            target: flow.target,
+            type: flow.FlowType,
+            transformation: flow.DataTransformation,
+            description: flow.FlowDescr
+        }));
+
+        // Color mapping for flow types
+        const flowColors = {
+            'data_flow': '#0066cc',
+            'control_flow': '#28a745',
+            'event_flow': '#ffc107',
+            'business_process': '#dc3545',
+            'validation_flow': '#17a2b8'
+        };
+
+        const simulation = d3.forceSimulation(nodes)
+            .force('link', d3.forceLink(links).id(d => d.id).distance(200))
+            .force('charge', d3.forceManyBody().strength(-600))
+            .force('center', d3.forceCenter(width/2, height/2))
+            .force('collision', d3.forceCollide().radius(30));
+
+        // Add arrowhead markers for different flow types
+        const defs = svg.append('defs');
+        Object.entries(flowColors).forEach(([type, color]) => {
+            defs.append('marker')
+                .attr('id', `arrow-${type}`)
+                .attr('viewBox', '0 -5 10 10')
+                .attr('refX', 25)
+                .attr('refY', 0)
+                .attr('markerWidth', 6)
+                .attr('markerHeight', 6)
+                .attr('orient', 'auto')
+                .append('path')
+                .attr('d', 'M0,-5L10,0L0,5')
+                .attr('fill', color);
+        });
+
+        // Links
+        const link = g.append('g')
+            .selectAll('line')
+            .data(links)
+            .enter()
+            .append('line')
+            .attr('stroke', d => flowColors[d.type] || '#666')
+            .attr('stroke-width', 4)
+            .attr('stroke-opacity', 0.8)
+            .attr('marker-end', d => `url(#arrow-${d.type})`);
+
+        // Nodes
+        const node = g.append('g')
+            .selectAll('circle')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('r', 20)
+            .attr('fill', '#fff')
+            .attr('stroke', '#333')
+            .attr('stroke-width', 3)
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        // Labels
+        const labels = g.append('g')
+            .selectAll('text')
+            .data(nodes)
+            .enter()
+            .append('text')
+            .text(d => d.name)
+            .attr('font-size', 10)
+            .attr('text-anchor', 'middle')
+            .attr('dy', 4)
+            .attr('fill', '#333')
+            .attr('font-weight', 'bold')
+            .style('pointer-events', 'none');
+
+        // Tooltips
+        node.append('title')
+            .text(d => `${d.name}\nType: ${d.type}\nDomain: ${d.domain}`);
+
+        link.append('title')
+            .text(d => `${d.type.toUpperCase()}\nTransformation: ${d.transformation}\n${d.description}`);
+
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        });
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+    }
+
+    function createTechnicalView() {
+        if (!currentData) return;
+        
+        const container = d3.select('#technicalView');
+        container.selectAll('*').remove();
+
+        const width = 800, height = 600;
+        const svg = container.append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on('zoom', (event) => {
+                g.attr('transform', event.transform);
+            });
+
+        svg.call(zoom);
+        const g = svg.append('g');
+
+        // Filter technical nodes (non-logical actors)
+        const technicalNodes = currentData.nodes.filter(node => 
+            node.type === 'SYS' || node.type === 'MOD' || node.type === 'FUNC'
+        );
+
+        // Map nodes for D3
+        const nodes = technicalNodes.map(node => ({
+            id: node.uuid,
+            name: node.Name || node.uuid?.substring(0, 8) || 'Unknown',
+            type: node.type,
+            description: node.Descr || ''
+        }));
+
+        // Filter technical relationships
+        const nodeIds = new Set(nodes.map(n => n.id));
+        const links = currentData.relationships.filter(rel => 
+            rel.LogicalFlow !== true && 
+            nodeIds.has(rel.source) && 
+            nodeIds.has(rel.target)
+        ).map(rel => ({
+            source: rel.source,
+            target: rel.target,
+            type: rel.type
+        }));
+
+        const nodeColors = {
+            SYS: '#dc3545',
+            MOD: '#20c997',
+            FUNC: '#0dcaf0'
+        };
+
+        const linkColors = {
+            compose: '#0d6efd',
+            call: '#fd7e14',
+            use: '#198754',
+            flow: '#d63384',
+            allocate: '#6f42c1'
+        };
+
+        const simulation = d3.forceSimulation(nodes)
+            .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+            .force('charge', d3.forceManyBody().strength(-300))
+            .force('center', d3.forceCenter(width/2, height/2))
+            .force('collision', d3.forceCollide().radius(20));
+
+        // Links
+        const link = g.append('g')
+            .selectAll('line')
+            .data(links)
+            .enter()
+            .append('line')
+            .attr('stroke', d => linkColors[d.type] || '#999')
+            .attr('stroke-width', 2)
+            .attr('stroke-opacity', 0.7);
+
+        // Nodes
+        const node = g.append('g')
+            .selectAll('circle')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('r', 10)
+            .attr('fill', d => nodeColors[d.type] || '#999')
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 2)
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        // Labels
+        const labels = g.append('g')
+            .selectAll('text')
+            .data(nodes)
+            .enter()
+            .append('text')
+            .text(d => d.name)
+            .attr('font-size', 10)
+            .attr('text-anchor', 'middle')
+            .attr('dy', -15)
+            .attr('fill', '#333')
+            .style('pointer-events', 'none');
+
+        // Tooltips
+        node.append('title')
+            .text(d => `${d.type}: ${d.name}\n${d.description}`);
+
+        link.append('title')
+            .text(d => `${d.type}: ${d.source.name || d.source.id} → ${d.target.name || d.target.id}`);
+
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+
+            labels
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        });
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+    }
+
+    function checkForStoredAnalysis() {
+        const storedResult = sessionStorage.getItem('analysisResult');
+        if (storedResult) {
+            try {
+                const analysisData = JSON.parse(storedResult);
+                currentData = analysisData;
+                showResults(analysisData);
+                sessionStorage.removeItem('analysisResult');
+                showToast('Analysis results loaded from analyzer', 'success');
+            } catch (error) {
+                console.error('Failed to parse stored analysis result:', error);
+                showToast('Failed to parse analysis results', 'error');
+            }
+        }
+    }
+</script>
+{% endblock %}

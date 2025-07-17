@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}Review - {{ super() }}{% endblock %}
+
+{% block extra_head %}
+<!-- Prism.js for syntax highlighting -->
+<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-okaidia.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-clipboard-check"></i> Code Pattern Review</h1>
+            <div>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-speedometer2"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Bar -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0">Review Progress</h6>
+                    <span class="badge bg-primary">
+                        {{ item.navigation.current }} / {{ item.navigation.total }}
+                    </span>
+                </div>
+                <div class="progress" style="height: 20px;">
+                    <div class="progress-bar bg-success" 
+                         role="progressbar" 
+                         style="width: {{ item.navigation.percentage }}%"
+                         aria-valuenow="{{ item.navigation.percentage }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                        {{ "%.1f"|format(item.navigation.percentage) }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Review Content -->
+<div class="row">
+    <!-- Code Display Panel -->
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-code-slash"></i> Code Pattern
+                    </h5>
+                    <span class="badge bg-info">{{ item.type | title }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- File Context -->
+                <div class="mb-3">
+                    <h6><i class="bi bi-file-code"></i> Context</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <small class="text-muted">File:</small><br>
+                            <code>{{ item.context.file }}</code>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Function:</small><br>
+                            <code>{{ item.context.function }}</code>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Line:</small><br>
+                            <code>{{ item.context.line_number }}</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Snippet -->
+                <div class="mb-3">
+                    <h6><i class="bi bi-braces"></i> Code Snippet</h6>
+                    <div class="code-container">
+                        <pre><code class="language-python">{{ item.code_snippet }}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Pattern Matches -->
+                {% if item.pattern_matches %}
+                <div class="mb-3">
+                    <h6><i class="bi bi-search"></i> Detected Patterns</h6>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for pattern in item.pattern_matches %}
+                            <span class="badge bg-secondary">{{ pattern }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Imports -->
+                {% if item.imports %}
+                <div class="mb-3">
+                    <h6><i class="bi bi-box-arrow-in-down"></i> Related Imports</h6>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for import in item.imports %}
+                            <span class="badge bg-info">{{ import }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Classification Panel -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-robot"></i> AI Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- AI Suggestion -->
+                {% if item.ai_suggestion %}
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">AI Suggestion</h6>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-success me-2">
+                                {{ "%.0f"|format(item.ai_suggestion.confidence * 100) }}%
+                            </span>
+                            <div class="progress" style="width: 60px; height: 8px;">
+                                <div class="progress-bar bg-success" 
+                                     style="width: {{ item.ai_suggestion.confidence * 100 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-light border">
+                        <div class="fw-bold mb-1">{{ item.ai_suggestion.classification }}</div>
+                        <small class="text-muted">{{ item.ai_suggestion.reasoning }}</small>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Classification Options -->
+                <div class="mb-4">
+                    <h6><i class="bi bi-tags"></i> Classification</h6>
+                    
+                    <!-- Quick Actions -->
+                    {% if item.ai_suggestion %}
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <button class="btn btn-success w-100" onclick="classifyItem('accept')">
+                                <i class="bi bi-check-circle"></i><br>
+                                <small>Accept AI</small>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-danger w-100" onclick="classifyItem('reject')">
+                                <i class="bi bi-x-circle"></i><br>
+                                <small>Reject AI</small>
+                            </button>
+                        </div>
+                    </div>
+                    <hr>
+                    {% endif %}
+
+                    <!-- Manual Classification -->
+                    <div class="d-grid gap-2">
+                        {% for option in get_classification_options() %}
+                            {% if option.value not in ['accept', 'reject'] %}
+                            <button class="btn {{ option.class }}" onclick="classifyItem('{{ option.value }}')">
+                                {{ option.label }}
+                            </button>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Notes Section -->
+                <div class="mb-4">
+                    <h6><i class="bi bi-chat-left-text"></i> Notes (Optional)</h6>
+                    <textarea id="classification-notes" 
+                              class="form-control" 
+                              rows="3" 
+                              placeholder="Add any notes about this classification..."></textarea>
+                </div>
+
+                <!-- Navigation -->
+                <div class="d-grid gap-2">
+                    <button class="btn btn-warning" onclick="skipItem()">
+                        <i class="bi bi-skip-forward"></i> Skip This Item
+                    </button>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <button class="btn btn-outline-secondary w-100" 
+                                    onclick="navigateItem('previous')"
+                                    {% if not item.navigation.has_previous %}disabled{% endif %}>
+                                <i class="bi bi-arrow-left"></i> Previous
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-secondary w-100" 
+                                    onclick="navigateItem('next')"
+                                    {% if not item.navigation.has_next %}disabled{% endif %}>
+                                Next <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Keyboard Shortcuts Help -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6><i class="bi bi-keyboard"></i> Keyboard Shortcuts</h6>
+                <div class="row">
+                    <div class="col-md-3">
+                        <kbd>A</kbd> Accept AI suggestion
+                    </div>
+                    <div class="col-md-3">
+                        <kbd>R</kbd> Reject AI suggestion
+                    </div>
+                    <div class="col-md-3">
+                        <kbd>S</kbd> Skip item
+                    </div>
+                    <div class="col-md-3">
+                        <kbd>←/→</kbd> Navigate
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Prism.js for syntax highlighting -->
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+<script>
+    // Classification function
+    async function classifyItem(classification) {
+        const notes = document.getElementById('classification-notes').value;
+        
+        showLoading('Saving classification...');
+        
+        try {
+            const result = await apiCall('/api/review/classify', {
+                method: 'POST',
+                body: JSON.stringify({
+                    classification: classification,
+                    confidence: 0.8,
+                    notes: notes
+                })
+            });
+            
+            if (result.success) {
+                showToast(`Classified as: ${classification}`, 'success');
+                
+                // Move to next item or show completion
+                if (result.next_index < result.progress.total_items) {
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    setTimeout(() => {
+                        window.location.href = '/';
+                        showToast('Review completed!', 'success');
+                    }, 1000);
+                }
+            } else {
+                showToast('Failed to save classification: ' + result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error classifying item:', error);
+            showToast('Error saving classification: ' + error.message, 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    // Skip function
+    async function skipItem() {
+        showLoading('Skipping item...');
+        
+        try {
+            const result = await apiCall('/api/review/skip', {
+                method: 'POST'
+            });
+            
+            if (result.success) {
+                showToast('Item skipped', 'info');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            } else {
+                showToast('Failed to skip item: ' + result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error skipping item:', error);
+            showToast('Error skipping item: ' + error.message, 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    // Navigation function
+    async function navigateItem(direction) {
+        showLoading('Navigating...');
+        
+        try {
+            const result = await apiCall('/api/review/navigate', {
+                method: 'POST',
+                body: JSON.stringify({
+                    direction: direction
+                })
+            });
+            
+            if (result.success) {
+                window.location.reload();
+            } else {
+                showToast('Navigation failed: ' + result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error navigating:', error);
+            showToast('Error navigating: ' + error.message, 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(event) {
+        // Don't trigger shortcuts if user is typing in a text field
+        if (event.target.tagName === 'TEXTAREA' || event.target.tagName === 'INPUT') {
+            return;
+        }
+        
+        switch(event.key.toLowerCase()) {
+            case 'a':
+                event.preventDefault();
+                classifyItem('accept');
+                break;
+            case 'r':
+                event.preventDefault();
+                classifyItem('reject');
+                break;
+            case 's':
+                event.preventDefault();
+                skipItem();
+                break;
+            case 'arrowleft':
+                event.preventDefault();
+                {% if item.navigation.has_previous %}
+                navigateItem('previous');
+                {% endif %}
+                break;
+            case 'arrowright':
+                event.preventDefault();
+                {% if item.navigation.has_next %}
+                navigateItem('next');
+                {% endif %}
+                break;
+        }
+    });
+    
+    // Auto-save notes as user types (debounced)
+    let notesTimeout;
+    document.getElementById('classification-notes').addEventListener('input', function() {
+        clearTimeout(notesTimeout);
+        notesTimeout = setTimeout(() => {
+            // Could save draft notes here
+            console.log('Notes updated:', this.value);
+        }, 1000);
+    });
+    
+    // Initialize syntax highlighting
+    document.addEventListener('DOMContentLoaded', function() {
+        Prism.highlightAll();
+        
+        // Focus on the notes textarea for quick note-taking
+        // document.getElementById('classification-notes').focus();
+    });
+</script>
+{% endblock %}

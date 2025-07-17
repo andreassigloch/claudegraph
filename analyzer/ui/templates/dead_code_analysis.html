@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dead Code Analysis - Code Architecture Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .dead-code-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .summary-card.duplicates { border-left: 4px solid #ffc107; }
+        .summary-card.orphaned { border-left: 4px solid #dc3545; }
+        .summary-card.unreachable { border-left: 4px solid #6c757d; }
+        .summary-card.total { border-left: 4px solid #007bff; }
+        
+        .summary-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .function-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .function-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .function-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .issue-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .issue-badge.duplicate { background: #fff3cd; color: #856404; }
+        .issue-badge.orphaned { background: #f8d7da; color: #721c24; }
+        .issue-badge.unreachable { background: #e2e3e5; color: #383d41; }
+        
+        .function-details {
+            padding: 20px;
+        }
+        
+        .function-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .meta-icon {
+            font-size: 1.1em;
+        }
+        
+        .code-snippet {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .issue-details {
+            background: #f1f3f4;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .similar-functions {
+            margin: 10px 0;
+        }
+        
+        .similar-function {
+            background: #e3f2fd;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 2px;
+            font-family: monospace;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-remove:hover {
+            background: #c82333;
+        }
+        
+        .btn-keep {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-keep:hover {
+            background: #218838;
+        }
+        
+        .btn-review {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-review:hover {
+            background: #e0a800;
+        }
+        
+        .bulk-actions {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .bulk-actions h3 {
+            margin-top: 0;
+        }
+        
+        .no-dead-code {
+            text-align: center;
+            padding: 60px 20px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            color: #155724;
+        }
+        
+        .no-dead-code h2 {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .status-message {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="dead-code-container">
+        <header>
+            <h1>📊 Dead Code Analysis</h1>
+            <p>Review unused functions and make informed decisions about your codebase.</p>
+        </header>
+
+        {% if error %}
+            <div class="error-message">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% elif not analysis %}
+            <div class="error-message">
+                <strong>No Analysis Data:</strong> Please run a code analysis first.
+            </div>
+        {% elif not has_dead_code %}
+            <div class="no-dead-code">
+                <h2>✅ No Dead Code Found!</h2>
+                <p>Congratulations! Your codebase has no unused functions.</p>
+                <p>All functions are properly connected through function calls or external triggers.</p>
+            </div>
+        {% else %}
+            <!-- Status Messages -->
+            <div id="statusMessage" class="status-message"></div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card total">
+                    <div class="summary-number">{{ analysis.summary.total_dead }}</div>
+                    <div>Total Dead Functions</div>
+                </div>
+                <div class="summary-card duplicates">
+                    <div class="summary-number">{{ analysis.summary.by_type.duplicates }}</div>
+                    <div>Duplicates</div>
+                </div>
+                <div class="summary-card orphaned">
+                    <div class="summary-number">{{ analysis.summary.by_type.orphaned }}</div>
+                    <div>Orphaned</div>
+                </div>
+                <div class="summary-card unreachable">
+                    <div class="summary-number">{{ analysis.summary.by_type.unreachable }}</div>
+                    <div>Unreachable</div>
+                </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            {% if analysis.duplicates %}
+            <div class="bulk-actions">
+                <h3>🔧 Bulk Actions</h3>
+                <p>Quickly handle common scenarios:</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-remove" onclick="removeAllDuplicates()">
+                        🗑️ Remove All Duplicates ({{ analysis.summary.by_type.duplicates }})
+                    </button>
+                    <button class="btn" style="background: #6c757d; color: white;" onclick="exportReport()">
+                        📊 Export Report
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Function Details -->
+            <div class="functions-list">
+                {% for func in analysis.dead_functions %}
+                <div class="function-card" id="func-{{ loop.index }}">
+                    <div class="function-header">
+                        <div>
+                            <span class="function-title">{{ func.full_name }}</span>
+                            <span class="issue-badge {{ func.issue_type.lower() }}">{{ func.issue_type }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="function-details">
+                        <div class="function-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">📍</span>
+                                <span>{{ func.location }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📏</span>
+                                <span>{{ func.function_size }} lines</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📁</span>
+                                <span>{{ func.module }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📝</span>
+                                <span>{% if func.has_docstring %}Has docstring{% else %}No docstring{% endif %}</span>
+                            </div>
+                        </div>
+
+                        <div class="code-snippet">{{ func.code_snippet }}</div>
+
+                        <div class="issue-details">
+                            <strong>🚨 Issue:</strong> {{ func.reason }}
+                            <br>
+                            <strong>💡 Suggestion:</strong> {{ func.suggestion }}
+                            
+                            {% if func.similar_functions %}
+                            <div class="similar-functions">
+                                <strong>Similar functions found:</strong>
+                                {% for similar in func.similar_functions %}
+                                <span class="similar-function">{{ similar }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-remove" onclick="handleFunctionAction('{{ func.full_name }}', 'remove')">
+                                🗑️ Mark for Removal
+                            </button>
+                            <button class="btn btn-keep" onclick="handleFunctionAction('{{ func.full_name }}', 'keep')">
+                                ✅ Keep in Analysis
+                            </button>
+                            <button class="btn btn-review" onclick="handleFunctionAction('{{ func.full_name }}', 'review')">
+                                🔧 Flag for Review
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Back Navigation -->
+        <div style="margin-top: 40px; text-align: center;">
+            <a href="/" class="btn" style="background: #6c757d; color: white; text-decoration: none;">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, isError = false) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${isError ? 'status-error' : 'status-success'}`;
+            statusDiv.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function handleFunctionAction(functionName, action) {
+            const actionMap = {
+                'remove': '🗑️ Marked for removal',
+                'keep': '✅ Kept in analysis', 
+                'review': '🔧 Flagged for review'
+            };
+
+            fetch('/dead_code/api/function_action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    function_name: functionName,
+                    action: action
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus(`${functionName}: ${actionMap[action]}`);
+                } else {
+                    showStatus(`Error: ${data.error}`, true);
+                }
+            })
+            .catch(error => {
+                showStatus(`Error: ${error.message}`, true);
+            });
+        }
+
+        function removeAllDuplicates() {
+            const duplicateFunctions = [
+                {% for func in analysis.duplicates %}
+                '{{ func.full_name }}'{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            fetch('/dead_code/api/bulk_action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'remove_all_duplicates',
+                    function_names: duplicateFunctions
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus(data.message);
+                } else {
+                    showStatus(`Error: ${data.error}`, true);
+                }
+            })
+            .catch(error => {
+                showStatus(`Error: ${error.message}`, true);
+            });
+        }
+
+        function exportReport() {
+            fetch('/dead_code/api/export_decisions')
+            .then(response => response.json())
+            .then(data => {
+                // Create and download JSON file
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'dead_code_analysis_report.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                showStatus('📊 Report exported successfully');
+            })
+            .catch(error => {
+                showStatus(`Error exporting report: ${error.message}`, true);
+            });
+        }
+    </script>
+</body>
+</html>

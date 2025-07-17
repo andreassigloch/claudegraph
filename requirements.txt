@@ -1,0 +1,38 @@
+# ClaudeGraph Requirements
+# Core Python dependencies for graph-based architecture intelligence
+
+# Neo4j Database Driver
+neo4j>=5.15.0
+
+# Code Analysis (from grphzer)
+ast-tools>=0.8.0
+pathlib2>=2.3.7
+click>=8.1.0
+pyyaml>=6.0
+requests>=2.31.0
+
+# Graph Processing
+networkx>=3.1
+pandas>=2.0.0
+numpy>=1.24.0
+
+# LLM Integration (Optional)
+openai>=1.0.0
+anthropic>=0.7.0
+
+# Web Framework (for UI)
+flask>=2.3.0
+flask-cors>=4.0.0
+flask-socketio>=5.3.0
+
+# Development Tools
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0
+
+# Utilities
+tqdm>=4.65.0
+python-dotenv>=1.0.0
+dataclasses-json>=0.5.0

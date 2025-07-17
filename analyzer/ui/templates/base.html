@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('main.analyzer_page') }}">
+                <i class="bi bi-diagram-3"></i>
+                {{ app_name }}
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.analyzer_page' %}active{% endif %}" 
+                           href="{{ url_for('main.analyzer_page') }}">
+                            <i class="bi bi-cpu"></i> Analyzer
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.graph_viewer' %}active{% endif %}" 
+                           href="{{ url_for('main.graph_viewer') }}">
+                            <i class="bi bi-diagram-3"></i> Graph Viewer
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'dead_code.dead_code_analysis' %}active{% endif %}" 
+                           href="{{ url_for('dead_code.dead_code_analysis') }}">
+                            <i class="bi bi-exclamation-triangle"></i> Dead Code
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> Session
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><span class="dropdown-item-text small">
+                                ID: {{ session.get('session_id', 'Unknown')[:8] }}...
+                            </span></li>
+                            <li><span class="dropdown-item-text small">
+                                Started: {{ session.get('created_at', '') | datetime_format('%H:%M') }}
+                            </span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="resetSession()">
+                                <i class="bi bi-arrow-clockwise"></i> Reset Session
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {% if category == 'error' %}
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                {% elif category == 'success' %}
+                                    <i class="bi bi-check-circle"></i>
+                                {% elif category == 'warning' %}
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle"></i>
+                                {% endif %}
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="text-muted small mb-0">
+                        © {{ current_year }} {{ app_name }} v{{ version }}
+                    </p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-clock"></i> 
+                        <span id="current-time">{{ moment().strftime('%H:%M:%S') }}</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay d-none">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="mt-3">Processing...</div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Common JavaScript -->
+    <script>
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            const timeElement = document.getElementById('current-time');
+            if (timeElement) {
+                timeElement.textContent = timeString;
+            }
+        }
+        
+        // Update time every second
+        setInterval(updateTime, 1000);
+        
+        // Show/hide loading overlay
+        function showLoading(message = 'Processing...') {
+            const overlay = document.getElementById('loading-overlay');
+            const messageDiv = overlay.querySelector('div.mt-3');
+            if (messageDiv) messageDiv.textContent = message;
+            overlay.classList.remove('d-none');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('d-none');
+        }
+        
+        // Reset session function
+        async function resetSession() {
+            if (!confirm('Are you sure you want to reset the session? All progress will be lost.')) {
+                return;
+            }
+            
+            showLoading('Resetting session...');
+            
+            try {
+                const response = await fetch('/api/reset', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    alert('Failed to reset session');
+                }
+            } catch (error) {
+                console.error('Error resetting session:', error);
+                alert('Error resetting session');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toastHtml = `
+                <div class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : type}" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            
+            // Create toast container if it doesn't exist
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+            
+            // Add toast to container
+            const toastElement = document.createElement('div');
+            toastElement.innerHTML = toastHtml;
+            toastContainer.appendChild(toastElement.firstElementChild);
+            
+            // Show toast
+            const toast = new bootstrap.Toast(toastContainer.lastElementChild);
+            toast.show();
+            
+            // Remove toast element after it's hidden
+            toastContainer.lastElementChild.addEventListener('hidden.bs.toast', function() {
+                this.remove();
+            });
+        }
+        
+        // API helper function
+        async function apiCall(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+            
+            const finalOptions = { ...defaultOptions, ...options };
+            
+            try {
+                const response = await fetch(url, finalOptions);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'API call failed');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('API call error:', error);
+                throw error;
+            }
+        }
+    </script>
+    
+    <!-- Page-specific JavaScript -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,626 @@
+{% extends "base.html" %}
+
+{% block title %}Results - {{ super() }}{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js for data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-graph-up"></i> Analysis Results</h1>
+            <div>
+                <button class="btn btn-success" onclick="exportResults()">
+                    <i class="bi bi-download"></i> Export JSON
+                </button>
+                <button class="btn btn-outline-primary" onclick="startNewAnalysis()">
+                    <i class="bi bi-plus-circle"></i> New Analysis
+                </button>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Summary -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-folder"></i> Project Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>{{ results.project_name }}</h6>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <small class="text-muted">Total Nodes:</small><br>
+                                <strong>{{ results.total_nodes }}</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                <small class="text-muted">Analysis Status:</small><br>
+                                {% if results.analysis_complete %}
+                                    <span class="badge bg-success">Complete</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Partial</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="text-muted">
+                            <i class="bi bi-calendar"></i> 
+                            <span id="analysis-date">{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Classification Results -->
+{% if results.classifications %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-pie-chart"></i> Classification Breakdown
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="classificationChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-check"></i> Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                {% set classification_counts = {} %}
+                {% for item_id, classification in results.classifications.items() %}
+                    {% set _ = classification_counts.update({classification.classification: classification_counts.get(classification.classification, 0) + 1}) %}
+                {% endfor %}
+                
+                {% for classification, count in classification_counts.items() %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-primary">{{ classification }}</span>
+                    <strong>{{ count }}</strong>
+                </div>
+                {% endfor %}
+                
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <span>Total Classifications:</span>
+                    <strong>{{ results.classifications|length }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Detailed Results Table -->
+{% if results.classifications %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-table"></i> Detailed Classifications
+                    </h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="exportTable()">
+                            <i class="bi bi-table"></i> Export Table
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="toggleTableView()">
+                            <i class="bi bi-eye"></i> Toggle View
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="results-table" class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Item ID</th>
+                                <th>Classification</th>
+                                <th>Confidence</th>
+                                <th>Timestamp</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item_id, classification in results.classifications.items() %}
+                            <tr>
+                                <td>
+                                    <code>{{ item_id }}</code>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ get_classification_color(classification.classification) }}">
+                                        {{ classification.classification }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress me-2" style="width: 60px; height: 8px;">
+                                            <div class="progress-bar bg-success" 
+                                                 style="width: {{ (classification.confidence * 100) }}%"></div>
+                                        </div>
+                                        <small>{{ "%.1f"|format(classification.confidence * 100) }}%</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ classification.timestamp | datetime_format('%H:%M:%S') }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if classification.notes %}
+                                        <button class="btn btn-sm btn-outline-info" 
+                                                onclick="showNotes('{{ classification.notes | replace("'", "\\'") }}')">
+                                            <i class="bi bi-chat-left-text"></i>
+                                        </button>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="viewItem('{{ item_id }}')">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" 
+                                                onclick="editClassification('{{ item_id }}')">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Analysis Statistics -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart"></i> Performance Metrics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h4 class="text-primary">{{ results.total_nodes }}</h4>
+                            <small class="text-muted">Total Nodes</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h4 class="text-success">{{ results.classifications|length }}</h4>
+                            <small class="text-muted">Classified</small>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h4 class="text-info">
+                                {{ "%.1f"|format((results.classifications|length / results.total_nodes * 100) if results.total_nodes > 0 else 0) }}%
+                            </h4>
+                            <small class="text-muted">Coverage</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h4 class="text-warning">
+                                {% set avg_confidence = (results.classifications.values() | map(attribute='confidence') | list | sum / results.classifications|length) if results.classifications|length > 0 else 0 %}
+                                {{ "%.1f"|format(avg_confidence * 100) }}%
+                            </h4>
+                            <small class="text-muted">Avg Confidence</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-gear"></i> Export Options
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success" onclick="exportResults('json')">
+                        <i class="bi bi-filetype-json"></i> Export as JSON
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="exportResults('csv')">
+                        <i class="bi bi-filetype-csv"></i> Export as CSV
+                    </button>
+                    <button class="btn btn-outline-info" onclick="exportResults('report')">
+                        <i class="bi bi-file-text"></i> Generate Report
+                    </button>
+                </div>
+                
+                <hr>
+                
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="include-metadata" checked>
+                    <label class="form-check-label" for="include-metadata">
+                        Include metadata
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="include-raw-data">
+                    <label class="form-check-label" for="include-raw-data">
+                        Include raw analysis data
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Next Steps -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-arrow-right-circle"></i> Next Steps
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <i class="bi bi-plus-circle fs-1 text-primary"></i>
+                                <h6 class="mt-2">Analyze Another Project</h6>
+                                <p class="small text-muted">
+                                    Start a new analysis with a different project
+                                </p>
+                                <button class="btn btn-outline-primary" onclick="startNewAnalysis()">
+                                    New Analysis
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="bi bi-graph-up fs-1 text-success"></i>
+                                <h6 class="mt-2">Visualize Results</h6>
+                                <p class="small text-muted">
+                                    Import results into Neo4j or other graph database
+                                </p>
+                                <button class="btn btn-outline-success" onclick="showVisualizationHelp()">
+                                    Learn More
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card border-warning">
+                            <div class="card-body text-center">
+                                <i class="bi bi-clipboard-check fs-1 text-warning"></i>
+                                <h6 class="mt-2">Review Classifications</h6>
+                                <p class="small text-muted">
+                                    Go back and modify any classifications
+                                </p>
+                                <a href="{{ url_for('main.review_interface') }}" class="btn btn-outline-warning">
+                                    Review Again
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="card border-danger">
+                            <div class="card-body text-center">
+                                <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
+                                <h6 class="mt-2">Dead Code Analysis</h6>
+                                <p class="small text-muted">
+                                    Find and remove unused functions
+                                </p>
+                                <a href="{{ url_for('dead_code.dead_code_analysis') }}" class="btn btn-outline-danger">
+                                    Analyze Dead Code
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-info">
+                            <div class="card-body text-center">
+                                <i class="bi bi-diagram-3 fs-1 text-info"></i>
+                                <h6 class="mt-2">View Graph</h6>
+                                <p class="small text-muted">
+                                    Interactive graph visualization
+                                </p>
+                                <a href="{{ url_for('main.graph_viewer') }}" class="btn btn-outline-info">
+                                    Open Viewer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<!-- Notes Modal -->
+<div class="modal fade" id="notesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Classification Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="notes-content"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Visualization Help Modal -->
+<div class="modal fade" id="visualizationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Visualization Guide</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Neo4j Import</h6>
+                <p>To import your results into Neo4j:</p>
+                <ol>
+                    <li>Export your results as JSON</li>
+                    <li>Use the Neo4j Browser or Cypher Shell</li>
+                    <li>Run the import commands provided in the exported file</li>
+                </ol>
+                
+                <h6>Graph Visualization Tools</h6>
+                <ul>
+                    <li><strong>Gephi:</strong> Open-source graph visualization</li>
+                    <li><strong>Cytoscape:</strong> Network analysis platform</li>
+                    <li><strong>D3.js:</strong> Custom web-based visualizations</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize chart if classifications exist
+    {% if results.classifications %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('classificationChart').getContext('2d');
+        
+        // Prepare chart data
+        const classificationData = {};
+        {% for item_id, classification in results.classifications.items() %}
+        const classification{{ loop.index }} = '{{ classification.classification }}';
+        classificationData[classification{{ loop.index }}] = (classificationData[classification{{ loop.index }}] || 0) + 1;
+        {% endfor %}
+        
+        const labels = Object.keys(classificationData);
+        const data = Object.values(classificationData);
+        const colors = [
+            '#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', 
+            '#6f42c1', '#fd7e14', '#20c997', '#6c757d', '#343a40'
+        ];
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    });
+    {% endif %}
+    
+    // Export functions
+    async function exportResults(format = 'json') {
+        const includeMetadata = document.getElementById('include-metadata').checked;
+        const includeRawData = document.getElementById('include-raw-data').checked;
+        
+        showLoading(`Exporting as ${format.toUpperCase()}...`);
+        
+        try {
+            let url = '/api/export/json';
+            if (format === 'csv') {
+                url = '/api/export/csv';
+            } else if (format === 'report') {
+                url = '/api/export/report';
+            }
+            
+            const params = new URLSearchParams({
+                include_metadata: includeMetadata,
+                include_raw_data: includeRawData
+            });
+            
+            const response = await fetch(`${url}?${params}`);
+            
+            if (response.ok) {
+                const blob = await response.blob();
+                const url_blob = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url_blob;
+                a.download = `analysis_results_${new Date().toISOString().slice(0, 10)}.${format}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url_blob);
+                
+                showToast(`Results exported as ${format.toUpperCase()}`, 'success');
+            } else {
+                const error = await response.json();
+                showToast('Export failed: ' + error.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error exporting results:', error);
+            showToast('Export error: ' + error.message, 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    // Table functions
+    function exportTable() {
+        const table = document.getElementById('results-table');
+        let csv = [];
+        
+        // Get headers
+        const headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+        csv.push(headers.join(','));
+        
+        // Get data rows
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const row = [];
+            tr.querySelectorAll('td').forEach((td, index) => {
+                if (index < headers.length - 1) { // Skip actions column
+                    row.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+                }
+            });
+            csv.push(row.join(','));
+        });
+        
+        // Download CSV
+        const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `classifications_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        showToast('Table exported as CSV', 'success');
+    }
+    
+    function toggleTableView() {
+        const table = document.getElementById('results-table');
+        const isCompact = table.classList.contains('table-sm');
+        
+        if (isCompact) {
+            table.classList.remove('table-sm');
+            showToast('Switched to detailed view', 'info');
+        } else {
+            table.classList.add('table-sm');
+            showToast('Switched to compact view', 'info');
+        }
+    }
+    
+    // Modal functions
+    function showNotes(notes) {
+        document.getElementById('notes-content').textContent = notes;
+        new bootstrap.Modal(document.getElementById('notesModal')).show();
+    }
+    
+    function showVisualizationHelp() {
+        new bootstrap.Modal(document.getElementById('visualizationModal')).show();
+    }
+    
+    // Item actions
+    function viewItem(itemId) {
+        showToast(`Viewing item: ${itemId}`, 'info');
+        // In a real implementation, this would show item details
+    }
+    
+    function editClassification(itemId) {
+        showToast(`Editing classification for: ${itemId}`, 'info');
+        // In a real implementation, this would open an edit modal
+    }
+    
+    // Navigation functions
+    function startNewAnalysis() {
+        if (confirm('Start a new analysis? This will clear the current results.')) {
+            window.location.href = '/upload';
+        }
+    }
+</script>
+
+<script>
+    // Helper function for classification colors
+    function get_classification_color(classification) {
+        const colors = {
+            'accept': 'success',
+            'reject': 'danger',
+            'HttpClient': 'info',
+            'Database': 'warning',
+            'FileSystem': 'secondary',
+            'WebEndpoint': 'primary',
+            'Unknown': 'dark'
+        };
+        return colors[classification] || 'secondary';
+    }
+    
+    // Make the function available globally
+    window.get_classification_color = get_classification_color;
+</script>
+{% endblock %}
