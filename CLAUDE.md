@@ -11,6 +11,16 @@ ClaudeGraph enables graph-based architecture intelligence for Claude Code develo
 3. **Query Everything**: Use Cypher for impact analysis and architectural insights
 4. **Leverage Neo4j MCP**: Use existing Neo4j MCP connector, not custom MCP server
 
+## Critical Architecture Requirements
+
+**ACTOR and SCHEMA System Connections**: All ACTOR and SCHEMA nodes MUST be connected to the system via `compose` relationships. This ensures:
+- Complete ontology compliance (all node types properly connected)
+- Proper system composition visibility
+- Interface consistency enforcement through schemas
+- Clear system boundaries through actors
+
+**Schema Interface Consistency**: Functions using the same schema must have identical interface definitions to prevent integration issues.
+
 ## Core Components
 
 ### grphzer Integration
