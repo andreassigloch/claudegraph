@@ -21,6 +21,22 @@ ClaudeGraph enables graph-based architecture intelligence for Claude Code develo
 
 **Schema Interface Consistency**: Functions using the same schema must have identical interface definitions to prevent integration issues.
 
+## Efficient Command Usage
+
+**IMPORTANT**: When using ClaudeGraph commands, trust the tool's efficiency:
+
+1. **Direct Execution**: Run commands directly without creating workflows
+   - ✅ `/claudegraph impact music` → "Not found" → Done
+   - ❌ Creating todos, searching files, multiple queries
+
+2. **Trust Results**: If component not found, stop there
+   - The tool already searched efficiently
+   - No need for additional file searches or reports
+
+3. **High-Level Focus**: Results show strategic architecture only
+   - UC, ACTOR, FCHAIN, SCHEMA components
+   - Not individual functions or implementation details
+
 ## Core Components
 
 ### grphzer Integration
@@ -42,25 +58,28 @@ ClaudeGraph enables graph-based architecture intelligence for Claude Code develo
 
 ## Key Commands
 
-### `/command GrphArchitect`
+### `/claudegraph` (Short Command)
 Main entry point for architecture operations:
 
 ```bash
 # Start new project with architecture design
-/command GrphArchitect design
+/claudegraph design
 
 # Extract architecture from existing code
-/command GrphArchitect analyze [path]
+/claudegraph analyze [path]
 
 # Query current architecture
-/command GrphArchitect query [cypher|pattern]
+/claudegraph query --pattern [pattern] | --cypher [query]
 
 # Analyze change impacts
-/command GrphArchitect impact [component]
+/claudegraph impact [component]
 
 # Check architectural consistency
-/command GrphArchitect check
+/claudegraph check
 ```
+
+### `/command GrphArchitect` (Legacy)
+Full command syntax still available for compatibility.
 
 ## Ontology Schema (v1.1.0)
 
@@ -87,7 +106,7 @@ Main entry point for architecture operations:
 
 ### 1. New Project (Forward Engineering)
 ```
-1. /command GrphArchitect design
+1. /claudegraph design
    → Interactive architecture design
    → Define SYS, UC, ACTOR, FCHAIN, FUNC nodes
    → Define flow relationships
@@ -99,20 +118,20 @@ Main entry point for architecture operations:
    → Maintain architecture sync
 
 3. Continuous validation
-   → /command GrphArchitect check
+   → /claudegraph check
    → Auto-update graph from code changes
 ```
 
 ### 2. Existing Project (Reverse Engineering)
 ```
-1. /command GrphArchitect analyze
+1. /claudegraph analyze
    → Parse code with grphzer
    → Extract functions, flows, actors
    → Build architecture graph
    → Store in Neo4j
 
 2. Architecture review
-   → /command GrphArchitect query
+   → /claudegraph query
    → Identify patterns and issues
    → Add missing requirements/tests
 
@@ -124,7 +143,7 @@ Main entry point for architecture operations:
 ### 3. During Development
 ```
 Before changes:
-/command GrphArchitect impact [component]
+/claudegraph impact [component]
 → See what will be affected
 
 After changes:
@@ -296,7 +315,7 @@ ORDER BY interactions DESC
 
 4. **Test with Reference Project**
    ```bash
-   /command GrphArchitect analyze /Users/andreas/Documents/Tools/VSCode/AssistantTestClaude
+   /claudegraph analyze /Users/andreas/Documents/Tools/VSCode/AssistantTestClaude
    ```
 
 This architecture enables Claude Code to understand and reason about code architecture through graph queries, providing intelligent suggestions and impact analysis for development decisions.

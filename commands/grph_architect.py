@@ -172,13 +172,49 @@ class QueryCommand(ArchitectureCommand):
             return {"error": f"Query failed: {str(e)}"}
     
     def _handle_pattern_query(self, pattern: str, client: Neo4jClient) -> List[Dict]:
-        """Handle pattern-based queries"""
+        """Handle pattern-based queries - OPTIMIZED for high-level abstraction"""
+        # OPTIMIZED: Focus on high-level components, limited results, efficient queries
         patterns = {
-            "functions": "MATCH (f:FUNC) RETURN f.Name, f.Descr LIMIT 20",
-            "actors": "MATCH (a:ACTOR) RETURN a.Name, a.Descr LIMIT 20",
-            "flows": "MATCH ()-[r:flow]->() RETURN r.FlowDescr, r.FlowDef LIMIT 20",
-            "requirements": "MATCH (r:REQ) RETURN r.Name, r.Descr LIMIT 20",
-            "tests": "MATCH (t:TEST) RETURN t.Name, t.Descr LIMIT 20"
+            "overview": """
+                MATCH (s:SYS)
+                OPTIONAL MATCH (s)-[:compose]->(uc:UC)
+                OPTIONAL MATCH (s)-[:compose]->(a:ACTOR)
+                OPTIONAL MATCH (s)-[:compose]->(fc:FCHAIN)
+                OPTIONAL MATCH (s)-[:compose]->(schema:SCHEMA)
+                RETURN s.Name as system, 
+                       count(DISTINCT uc) as use_cases,
+                       count(DISTINCT a) as actors,
+                       count(DISTINCT fc) as chains,
+                       count(DISTINCT schema) as schemas
+                LIMIT 5
+            """,
+            "actors": """
+                MATCH (s:SYS)-[:compose]->(a:ACTOR)
+                RETURN a.Name as name, a.Descr as description
+                ORDER BY a.Name LIMIT 10
+            """,
+            "chains": """
+                MATCH (s:SYS)-[:compose]->(fc:FCHAIN)
+                OPTIONAL MATCH (fc)-[:compose]->(f:FUNC)
+                RETURN fc.Name as name, fc.Descr as description, count(f) as function_count
+                ORDER BY function_count DESC LIMIT 10
+            """,
+            "flows": """
+                MATCH (f1:FUNC)-[r:flow]->(f2:FUNC)
+                RETURN f1.Name + ' → ' + f2.Name as flow, r.FlowDescr as description
+                ORDER BY f1.Name LIMIT 10
+            """,
+            "schemas": """
+                MATCH (s:SYS)-[:compose]->(schema:SCHEMA)
+                RETURN schema.Name as name, schema.Descr as description, schema.Struct as structure
+                ORDER BY schema.Name LIMIT 10
+            """,
+            "use_cases": """
+                MATCH (s:SYS)-[:compose]->(uc:UC)
+                OPTIONAL MATCH (uc)-[:satisfy]->(req:REQ)
+                RETURN uc.Name as name, uc.Descr as description, count(req) as requirements
+                ORDER BY requirements DESC LIMIT 10
+            """
         }
         
         query = patterns.get(pattern.lower())
@@ -201,53 +237,92 @@ class ImpactCommand(ArchitectureCommand):
         try:
             neo4j_client = Neo4jClient()
             
-            # Find direct impacts
-            direct_query = """
-                MATCH (c {Name: $component})
-                MATCH (c)-[r]-(affected)
-                RETURN affected.Name as name, 
-                       labels(affected) as types,
-                       type(r) as relationship
-                ORDER BY name
+            # OPTIMIZED: Single consolidated query for complete impact analysis
+            # Focus on high-level abstraction only (UC, ACTOR, FCHAIN, SCHEMA)
+            optimized_query = """
+                WITH $component as target_name
+                
+                // Find target component
+                MATCH (target) 
+                WHERE target.Name CONTAINS target_name
+                
+                // Collect all relationships
+                WITH target
+                
+                // Direct impacts - HIGH-LEVEL ONLY
+                OPTIONAL MATCH (target)-[r1]-(direct)
+                WHERE labels(direct)[0] IN ['UC', 'ACTOR', 'FCHAIN', 'SCHEMA', 'SYS']
+                WITH target, collect(DISTINCT direct) as direct_impacts
+                
+                // Transitive impacts - 2 hops max, HIGH-LEVEL ONLY
+                OPTIONAL MATCH (target)-[*2]-(transitive)
+                WHERE NOT transitive = target 
+                  AND labels(transitive)[0] IN ['UC', 'ACTOR', 'FCHAIN', 'SCHEMA', 'SYS']
+                WITH target, direct_impacts, collect(DISTINCT transitive) as transitive_impacts
+                
+                // Affected requirements/tests - simplified
+                OPTIONAL MATCH (target)-[*1..2]-(req:REQ)-[:verify]->(test:TEST)
+                WITH target, direct_impacts, transitive_impacts, collect(DISTINCT test) as affected_tests
+                
+                RETURN {
+                    component: target.Name,
+                    type: labels(target)[0],
+                    direct: [x IN direct_impacts WHERE x IS NOT NULL | {
+                        name: x.Name, 
+                        type: labels(x)[0]
+                    }][0..5],
+                    transitive: [x IN transitive_impacts WHERE x IS NOT NULL | {
+                        name: x.Name, 
+                        type: labels(x)[0]
+                    }][0..5],
+                    tests: [x IN affected_tests WHERE x IS NOT NULL | x.Name][0..3],
+                    summary: {
+                        direct_count: size([x IN direct_impacts WHERE x IS NOT NULL]),
+                        transitive_count: size([x IN transitive_impacts WHERE x IS NOT NULL]),
+                        test_count: size([x IN affected_tests WHERE x IS NOT NULL])
+                    }
+                } as impact
             """
             
-            direct_impacts = neo4j_client.execute_query(direct_query, {"component": args.component})
+            result = neo4j_client.execute_query(optimized_query, {"component": args.component})
             
-            # Find transitive impacts
-            transitive_query = """
-                MATCH (c {Name: $component})
-                MATCH path = (c)-[*2..3]-(affected)
-                WHERE NOT affected = c
-                RETURN DISTINCT affected.Name as name,
-                       labels(affected) as types,
-                       length(path) as distance
-                ORDER BY distance, name
-                LIMIT 20
-            """
-            
-            transitive_impacts = neo4j_client.execute_query(transitive_query, {"component": args.component})
-            
-            # Find affected tests
-            test_query = """
-                MATCH (c {Name: $component})
-                MATCH (c)-[:satisfy]->(r:REQ)-[:verify]->(t:TEST)
-                RETURN t.Name as test_name, t.Descr as test_description
-            """
-            
-            affected_tests = neo4j_client.execute_query(test_query, {"component": args.component})
-            
-            return {
-                "status": "success",
-                "component": args.component,
-                "direct_impacts": direct_impacts,
-                "transitive_impacts": transitive_impacts,
-                "affected_tests": affected_tests,
-                "impact_summary": {
-                    "direct": len(direct_impacts),
-                    "transitive": len(transitive_impacts),
-                    "tests": len(affected_tests)
+            if result and result[0]["impact"]:
+                impact = result[0]["impact"]
+                return {
+                    "status": "success",
+                    "component": impact["component"],
+                    "component_type": impact["type"],
+                    "direct_impacts": impact["direct"],
+                    "transitive_impacts": impact["transitive"],
+                    "affected_tests": impact["tests"],
+                    "impact_summary": impact["summary"]
                 }
-            }
+            else:
+                # OPTIMIZED: Quick check for component existence
+                exists_query = "MATCH (n) WHERE n.Name CONTAINS $component RETURN count(n) as count"
+                exists_result = neo4j_client.execute_query(exists_query, {"component": args.component})
+                
+                if exists_result and exists_result[0]["count"] > 0:
+                    return {
+                        "status": "success",
+                        "component": args.component,
+                        "message": f"Component '{args.component}' exists but has no high-level architectural connections",
+                        "direct_impacts": [],
+                        "transitive_impacts": [],
+                        "affected_tests": [],
+                        "impact_summary": {"direct_count": 0, "transitive_count": 0, "test_count": 0}
+                    }
+                else:
+                    return {
+                        "status": "not_found",
+                        "component": args.component,
+                        "message": f"Component '{args.component}' not found in architecture database",
+                        "suggestion": "Try: /claudegraph query --pattern overview to see available components",
+                        "direct_impacts": [],
+                        "transitive_impacts": [],
+                        "affected_tests": [],
+                        "impact_summary": {"direct_count": 0, "transitive_count": 0, "test_count": 0}
+                    }
             
         except Exception as e:
             return {"error": f"Impact analysis failed: {str(e)}"}
