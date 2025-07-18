@@ -89,6 +89,7 @@
           ["FCHAIN", "ACTOR"],
           ["UC", "FCHAIN"],
           ["FCHAIN", "FUNC"],
+          ["FUNC", "FUNC"],
           ["SYS", "MOD"]
         ]
       },

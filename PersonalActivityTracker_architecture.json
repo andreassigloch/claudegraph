@@ -1,0 +1,686 @@
+{
+  "nodes": [
+    {
+      "uuid": "sys-personalactivitytracker-001",
+      "type": "SYS",
+      "Name": "PersonalActivityTracker",
+      "Descr": "Mac app for personal activity tracking with calendar integration and wellness monitoring"
+    },
+    {
+      "uuid": "uc-detectactivityblocks-002",
+      "type": "UC",
+      "Name": "DetectActivityBlocks",
+      "Descr": "Monitor app focus continuously, log activities, and trigger classification prompts after 15min stabilization"
+    },
+    {
+      "uuid": "uc-classifyactivity-003",
+      "type": "UC",
+      "Name": "ClassifyActivity",
+      "Descr": "Auto-classify activities using smart defaults, scan git for project names, prompt user only when uncertain"
+    },
+    {
+      "uuid": "uc-createcalendarentry-004",
+      "type": "UC", 
+      "Name": "CreateCalendarEntry",
+      "Descr": "Generate calendar events with project names and store permanently in Calendar.app"
+    },
+    {
+      "uuid": "uc-providewellnessnudges-005",
+      "type": "UC",
+      "Name": "ProvideWellnessNudges",
+      "Descr": "Monitor session duration, detect long blocks >1h, trigger break notifications and Apple Timer integration"
+    },
+    {
+      "uuid": "uc-managedataretention-006",
+      "type": "UC",
+      "Name": "ManageDataRetention",
+      "Descr": "Separate daily cleanup cycle to delete local logs after 7 days, ensuring only calendar entries remain"
+    },
+    {
+      "uuid": "actor-user-007",
+      "type": "ACTOR",
+      "Name": "User",
+      "Descr": "Person using the app who receives classification prompts and provides activity categorization"
+    },
+    {
+      "uuid": "actor-calendarapp-008",
+      "type": "ACTOR",
+      "Name": "CalendarApp",
+      "Descr": "macOS Calendar.app for permanent storage of classified activity blocks"
+    },
+    {
+      "uuid": "actor-gitsystem-009",
+      "type": "ACTOR",
+      "Name": "GitSystem",
+      "Descr": "Local git repositories providing project name detection through commit analysis"
+    },
+    {
+      "uuid": "actor-systemmonitor-010",
+      "type": "ACTOR",
+      "Name": "SystemMonitor",
+      "Descr": "macOS Accessibility APIs for app focus monitoring and window tracking"
+    },
+    {
+      "uuid": "actor-notificationcenter-011",
+      "type": "ACTOR",
+      "Name": "NotificationCenter",
+      "Descr": "macOS notification system for break reminders and classification prompts"
+    },
+    {
+      "uuid": "actor-appletimer-012",
+      "type": "ACTOR",
+      "Name": "AppleTimer",
+      "Descr": "macOS built-in timer for break countdown functionality"
+    },
+    {
+      "uuid": "schema-activityblock-013",
+      "type": "SCHEMA",
+      "Name": "ActivityBlock",
+      "Descr": "Data structure for tracked activity sessions with classification and timing",
+      "Struct": "{\"startTime\": \"datetime\", \"endTime\": \"datetime\", \"application\": \"string\", \"classification\": \"enum[Business, Private, Coding, Meeting]\", \"projectName\": \"string?\", \"autoClassified\": \"boolean\", \"gitCommits\": [\"string\"]}"
+    },
+    {
+      "uuid": "schema-classificationrule-014",
+      "type": "SCHEMA",
+      "Name": "ClassificationRule",
+      "Descr": "Rules for automatic activity classification based on application patterns",
+      "Struct": "{\"applicationPattern\": \"string\", \"autoClassification\": \"string?\", \"confidence\": \"number\", \"requiresUserInput\": \"boolean\", \"dropdownOptions\": [\"string\"], \"checkGit\": \"boolean?\"}"
+    },
+    {
+      "uuid": "schema-calendarevent-015",
+      "type": "SCHEMA",
+      "Name": "CalendarEvent",
+      "Descr": "Calendar entry format for permanent activity storage",
+      "Struct": "{\"title\": \"string\", \"startDate\": \"datetime\", \"endDate\": \"datetime\", \"notes\": \"string\", \"calendarId\": \"string\"}"
+    },
+    {
+      "uuid": "fchain-activitydetectionflow-016",
+      "type": "FCHAIN",
+      "Name": "ActivityDetectionFlow",
+      "Descr": "Continuous monitoring and stabilized classification trigger workflow"
+    },
+    {
+      "uuid": "fchain-classificationflow-017",
+      "type": "FCHAIN",
+      "Name": "ClassificationFlow",
+      "Descr": "Smart classification with git integration and selective user prompting"
+    },
+    {
+      "uuid": "fchain-calendarintegrationflow-018",
+      "type": "FCHAIN",
+      "Name": "CalendarIntegrationFlow",
+      "Descr": "Calendar event creation and permanent storage workflow"
+    },
+    {
+      "uuid": "fchain-wellnessmonitoringflow-019",
+      "type": "FCHAIN",
+      "Name": "WellnessMonitoringFlow",
+      "Descr": "Session tracking, break detection, and Apple Timer integration"
+    },
+    {
+      "uuid": "fchain-dataretentionflow-020",
+      "type": "FCHAIN",
+      "Name": "DataRetentionFlow",
+      "Descr": "Separate daily cleanup cycle for 7-day log retention and privacy compliance"
+    },
+    {
+      "uuid": "func-monitorappfocus-021",
+      "type": "FUNC",
+      "Name": "MonitorAppFocus",
+      "Descr": "Continuously track active application and window focus changes"
+    },
+    {
+      "uuid": "func-logactivitycontinuously-022",
+      "type": "FUNC",
+      "Name": "LogActivityContinuously",
+      "Descr": "Record all activity data immediately without waiting for classification"
+    },
+    {
+      "uuid": "func-wait15minstabilization-023",
+      "type": "FUNC",
+      "Name": "Wait15MinStabilization",
+      "Descr": "Delay classification prompts until 15 minutes of stable activity detected"
+    },
+    {
+      "uuid": "func-triggerclassificationprompt-024",
+      "type": "FUNC",
+      "Name": "TriggerClassificationPrompt",
+      "Descr": "Initiate user classification request after stabilization period"
+    },
+    {
+      "uuid": "func-analyzeapplication-025",
+      "type": "FUNC",
+      "Name": "AnalyzeApplication",
+      "Descr": "Identify application type and determine classification approach"
+    },
+    {
+      "uuid": "func-applysmartdefaults-026",
+      "type": "FUNC",
+      "Name": "ApplySmartDefaults",
+      "Descr": "Apply confidence-based auto-classification (Office→Business 90%, Terminal→Coding 100%)"
+    },
+    {
+      "uuid": "func-scangitforprojectname-027",
+      "type": "FUNC",
+      "Name": "ScanGitForProjectName",
+      "Descr": "Analyze git commits in active directory to extract project name for coding activities"
+    },
+    {
+      "uuid": "func-promptuseronlyifuncertain-028",
+      "type": "FUNC",
+      "Name": "PromptUserOnlyIfUncertain",
+      "Descr": "Show classification dropdown only when auto-classification confidence is low"
+    },
+    {
+      "uuid": "func-finalizeclassification-029",
+      "type": "FUNC",
+      "Name": "FinalizeClassification",
+      "Descr": "Complete activity classification and prepare for calendar integration"
+    },
+    {
+      "uuid": "func-formatactivitywithprojectname-030",
+      "type": "FUNC",
+      "Name": "FormatActivityWithProjectName",
+      "Descr": "Create descriptive activity title including project name when available"
+    },
+    {
+      "uuid": "func-createcalendarevent-031",
+      "type": "FUNC",
+      "Name": "CreateCalendarEvent",
+      "Descr": "Generate calendar entry with proper timing and description"
+    },
+    {
+      "uuid": "func-verifycalendarstorage-032",
+      "type": "FUNC",
+      "Name": "VerifyCalendarStorage",
+      "Descr": "Confirm successful calendar entry creation and accessibility"
+    },
+    {
+      "uuid": "func-markforretentiontracking-033",
+      "type": "FUNC",
+      "Name": "MarkForRetentionTracking",
+      "Descr": "Tag local logs for 7-day retention countdown after calendar storage"
+    },
+    {
+      "uuid": "func-tracksessionduration-034",
+      "type": "FUNC",
+      "Name": "TrackSessionDuration",
+      "Descr": "Monitor continuous activity duration for wellness notifications"
+    },
+    {
+      "uuid": "func-detectlongsessions-035",
+      "type": "FUNC",
+      "Name": "DetectLongSessions",
+      "Descr": "Identify activity blocks exceeding 1 hour duration"
+    },
+    {
+      "uuid": "func-triggerbreaknotification-036",
+      "type": "FUNC",
+      "Name": "TriggerBreakNotification",
+      "Descr": "Send break reminder notification for long activity sessions"
+    },
+    {
+      "uuid": "func-launchappletimer-037",
+      "type": "FUNC",
+      "Name": "LaunchAppleTimer",
+      "Descr": "Start macOS timer for break countdown or next work session"
+    },
+    {
+      "uuid": "func-scheduledailycleanupcheck-038",
+      "type": "FUNC",
+      "Name": "ScheduleDailyCleanupCheck",
+      "Descr": "Run daily background task to identify expired local logs"
+    },
+    {
+      "uuid": "func-identifyexpiredlogs-039",
+      "type": "FUNC",
+      "Name": "IdentifyExpiredLogs",
+      "Descr": "Find local activity logs older than 7 days with confirmed calendar storage"
+    },
+    {
+      "uuid": "func-deletelocaldata-040",
+      "type": "FUNC",
+      "Name": "DeleteLocalData",
+      "Descr": "Permanently remove expired local logs while preserving calendar entries"
+    },
+    {
+      "uuid": "func-verifyonlycalendarremains-041",
+      "type": "FUNC",
+      "Name": "VerifyOnlyCalendarRemains",
+      "Descr": "Confirm successful data deletion and calendar-only retention"
+    }
+  ],
+  "relationships": [
+    {
+      "uuid": "rel-sys-uc-001",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "uc-detectactivityblocks-002"
+    },
+    {
+      "uuid": "rel-sys-uc-002",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "uc-classifyactivity-003"
+    },
+    {
+      "uuid": "rel-sys-uc-003",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "uc-createcalendarentry-004"
+    },
+    {
+      "uuid": "rel-sys-uc-004",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "uc-providewellnessnudges-005"
+    },
+    {
+      "uuid": "rel-sys-uc-005",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "uc-managedataretention-006"
+    },
+    {
+      "uuid": "rel-sys-actor-001",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "actor-user-007"
+    },
+    {
+      "uuid": "rel-sys-actor-002",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "actor-calendarapp-008"
+    },
+    {
+      "uuid": "rel-sys-actor-003",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "actor-gitsystem-009"
+    },
+    {
+      "uuid": "rel-sys-actor-004",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "actor-systemmonitor-010"
+    },
+    {
+      "uuid": "rel-sys-actor-005",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "actor-notificationcenter-011"
+    },
+    {
+      "uuid": "rel-sys-actor-006",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "actor-appletimer-012"
+    },
+    {
+      "uuid": "rel-sys-schema-001",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "schema-activityblock-013"
+    },
+    {
+      "uuid": "rel-sys-schema-002",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "schema-classificationrule-014"
+    },
+    {
+      "uuid": "rel-sys-schema-003",
+      "type": "compose",
+      "source": "sys-personalactivitytracker-001",
+      "target": "schema-calendarevent-015"
+    },
+    {
+      "uuid": "rel-uc-fchain-001",
+      "type": "compose",
+      "source": "uc-detectactivityblocks-002",
+      "target": "fchain-activitydetectionflow-016"
+    },
+    {
+      "uuid": "rel-uc-fchain-002",
+      "type": "compose",
+      "source": "uc-classifyactivity-003",
+      "target": "fchain-classificationflow-017"
+    },
+    {
+      "uuid": "rel-uc-fchain-003",
+      "type": "compose",
+      "source": "uc-createcalendarentry-004",
+      "target": "fchain-calendarintegrationflow-018"
+    },
+    {
+      "uuid": "rel-uc-fchain-004",
+      "type": "compose",
+      "source": "uc-providewellnessnudges-005",
+      "target": "fchain-wellnessmonitoringflow-019"
+    },
+    {
+      "uuid": "rel-uc-fchain-005",
+      "type": "compose",
+      "source": "uc-managedataretention-006",
+      "target": "fchain-dataretentionflow-020"
+    },
+    {
+      "uuid": "rel-fchain-func-001",
+      "type": "compose",
+      "source": "fchain-activitydetectionflow-016",
+      "target": "func-monitorappfocus-021"
+    },
+    {
+      "uuid": "rel-fchain-func-002",
+      "type": "compose",
+      "source": "fchain-activitydetectionflow-016",
+      "target": "func-logactivitycontinuously-022"
+    },
+    {
+      "uuid": "rel-fchain-func-003",
+      "type": "compose",
+      "source": "fchain-activitydetectionflow-016",
+      "target": "func-wait15minstabilization-023"
+    },
+    {
+      "uuid": "rel-fchain-func-004",
+      "type": "compose",
+      "source": "fchain-activitydetectionflow-016",
+      "target": "func-triggerclassificationprompt-024"
+    },
+    {
+      "uuid": "rel-fchain-func-005",
+      "type": "compose",
+      "source": "fchain-classificationflow-017",
+      "target": "func-analyzeapplication-025"
+    },
+    {
+      "uuid": "rel-fchain-func-006",
+      "type": "compose",
+      "source": "fchain-classificationflow-017",
+      "target": "func-applysmartdefaults-026"
+    },
+    {
+      "uuid": "rel-fchain-func-007",
+      "type": "compose",
+      "source": "fchain-classificationflow-017",
+      "target": "func-scangitforprojectname-027"
+    },
+    {
+      "uuid": "rel-fchain-func-008",
+      "type": "compose",
+      "source": "fchain-classificationflow-017",
+      "target": "func-promptuseronlyifuncertain-028"
+    },
+    {
+      "uuid": "rel-fchain-func-009",
+      "type": "compose",
+      "source": "fchain-classificationflow-017",
+      "target": "func-finalizeclassification-029"
+    },
+    {
+      "uuid": "rel-fchain-func-010",
+      "type": "compose",
+      "source": "fchain-calendarintegrationflow-018",
+      "target": "func-formatactivitywithprojectname-030"
+    },
+    {
+      "uuid": "rel-fchain-func-011",
+      "type": "compose",
+      "source": "fchain-calendarintegrationflow-018",
+      "target": "func-createcalendarevent-031"
+    },
+    {
+      "uuid": "rel-fchain-func-012",
+      "type": "compose",
+      "source": "fchain-calendarintegrationflow-018",
+      "target": "func-verifycalendarstorage-032"
+    },
+    {
+      "uuid": "rel-fchain-func-013",
+      "type": "compose",
+      "source": "fchain-calendarintegrationflow-018",
+      "target": "func-markforretentiontracking-033"
+    },
+    {
+      "uuid": "rel-fchain-func-014",
+      "type": "compose",
+      "source": "fchain-wellnessmonitoringflow-019",
+      "target": "func-tracksessionduration-034"
+    },
+    {
+      "uuid": "rel-fchain-func-015",
+      "type": "compose",
+      "source": "fchain-wellnessmonitoringflow-019",
+      "target": "func-detectlongsessions-035"
+    },
+    {
+      "uuid": "rel-fchain-func-016",
+      "type": "compose",
+      "source": "fchain-wellnessmonitoringflow-019",
+      "target": "func-triggerbreaknotification-036"
+    },
+    {
+      "uuid": "rel-fchain-func-017",
+      "type": "compose",
+      "source": "fchain-wellnessmonitoringflow-019",
+      "target": "func-launchappletimer-037"
+    },
+    {
+      "uuid": "rel-fchain-func-018",
+      "type": "compose",
+      "source": "fchain-dataretentionflow-020",
+      "target": "func-scheduledailycleanupcheck-038"
+    },
+    {
+      "uuid": "rel-fchain-func-019",
+      "type": "compose",
+      "source": "fchain-dataretentionflow-020",
+      "target": "func-identifyexpiredlogs-039"
+    },
+    {
+      "uuid": "rel-fchain-func-020",
+      "type": "compose",
+      "source": "fchain-dataretentionflow-020",
+      "target": "func-deletelocaldata-040"
+    },
+    {
+      "uuid": "rel-fchain-func-021",
+      "type": "compose",
+      "source": "fchain-dataretentionflow-020",
+      "target": "func-verifyonlycalendarremains-041"
+    },
+    {
+      "uuid": "rel-flow-001",
+      "type": "flow",
+      "source": "func-monitorappfocus-021",
+      "target": "func-logactivitycontinuously-022",
+      "FlowDescr": "App focus changes trigger continuous activity logging",
+      "FlowDef": "focus_change_events → log_activity(timestamp, app, window)"
+    },
+    {
+      "uuid": "rel-flow-002",
+      "type": "flow",
+      "source": "func-logactivitycontinuously-022",
+      "target": "func-wait15minstabilization-023",
+      "FlowDescr": "Logged activities feed into stabilization delay logic",
+      "FlowDef": "activity_log → check_stability_duration(15_minutes)"
+    },
+    {
+      "uuid": "rel-flow-003",
+      "type": "flow",
+      "source": "func-wait15minstabilization-023",
+      "target": "func-triggerclassificationprompt-024",
+      "FlowDescr": "Stabilized activities trigger classification prompts",
+      "FlowDef": "stable_activity_block → trigger_user_prompt(activity)"
+    },
+    {
+      "uuid": "rel-flow-004",
+      "type": "flow",
+      "source": "func-analyzeapplication-025",
+      "target": "func-applysmartdefaults-026",
+      "FlowDescr": "Application analysis feeds into smart default classification",
+      "FlowDef": "app_analysis → apply_classification_rules(confidence_level)"
+    },
+    {
+      "uuid": "rel-flow-005",
+      "type": "flow",
+      "source": "func-applysmartdefaults-026",
+      "target": "func-scangitforprojectname-027",
+      "FlowDescr": "Default classification triggers git project scanning for coding activities",
+      "FlowDef": "classification_result → scan_git_repos() if coding_activity"
+    },
+    {
+      "uuid": "rel-flow-006",
+      "type": "flow",
+      "source": "func-scangitforprojectname-027",
+      "target": "func-promptuseronlyifuncertain-028",
+      "FlowDescr": "Git analysis results determine if user prompt is needed",
+      "FlowDef": "project_name + confidence → prompt_user() if uncertain"
+    },
+    {
+      "uuid": "rel-flow-007",
+      "type": "flow",
+      "source": "func-promptuseronlyifuncertain-028",
+      "target": "func-finalizeclassification-029",
+      "FlowDescr": "User input or auto-classification finalizes activity categorization",
+      "FlowDef": "user_selection || auto_classification → final_classification"
+    },
+    {
+      "uuid": "rel-flow-008",
+      "type": "flow",
+      "source": "func-formatactivitywithprojectname-030",
+      "target": "func-createcalendarevent-031",
+      "FlowDescr": "Formatted activity description generates calendar event",
+      "FlowDef": "activity_title + project_name → create_calendar_entry()"
+    },
+    {
+      "uuid": "rel-flow-009",
+      "type": "flow",
+      "source": "func-createcalendarevent-031",
+      "target": "func-verifycalendarstorage-032",
+      "FlowDescr": "Calendar event creation triggers storage verification",
+      "FlowDef": "calendar_event → verify_storage_success(event_id)"
+    },
+    {
+      "uuid": "rel-flow-010",
+      "type": "flow",
+      "source": "func-verifycalendarstorage-032",
+      "target": "func-markforretentiontracking-033",
+      "FlowDescr": "Verified calendar storage enables local log retention tracking",
+      "FlowDef": "storage_confirmed → mark_for_cleanup(activity_log, 7_days)"
+    },
+    {
+      "uuid": "rel-flow-011",
+      "type": "flow",
+      "source": "func-tracksessionduration-034",
+      "target": "func-detectlongsessions-035",
+      "FlowDescr": "Session duration tracking identifies long activity blocks",
+      "FlowDef": "session_duration → check_long_session(1_hour_threshold)"
+    },
+    {
+      "uuid": "rel-flow-012",
+      "type": "flow",
+      "source": "func-detectlongsessions-035",
+      "target": "func-triggerbreaknotification-036",
+      "FlowDescr": "Long session detection triggers break reminder notifications",
+      "FlowDef": "long_session_detected → send_break_notification()"
+    },
+    {
+      "uuid": "rel-flow-013",
+      "type": "flow",
+      "source": "func-triggerbreaknotification-036",
+      "target": "func-launchappletimer-037",
+      "FlowDescr": "Break notification offers Apple Timer for break countdown",
+      "FlowDef": "break_notification → launch_timer(break_duration) if user_accepts"
+    },
+    {
+      "uuid": "rel-flow-014",
+      "type": "flow",
+      "source": "func-scheduledailycleanupcheck-038",
+      "target": "func-identifyexpiredlogs-039",
+      "FlowDescr": "Daily cleanup schedule triggers expired log identification",
+      "FlowDef": "daily_cleanup_trigger → identify_logs_older_than(7_days)"
+    },
+    {
+      "uuid": "rel-flow-015",
+      "type": "flow",
+      "source": "func-identifyexpiredlogs-039",
+      "target": "func-deletelocaldata-040",
+      "FlowDescr": "Expired log identification leads to secure data deletion",
+      "FlowDef": "expired_logs_list → secure_delete(local_files)"
+    },
+    {
+      "uuid": "rel-flow-016",
+      "type": "flow",
+      "source": "func-deletelocaldata-040",
+      "target": "func-verifyonlycalendarremains-041",
+      "FlowDescr": "Local data deletion is verified to ensure only calendar data remains",
+      "FlowDef": "deletion_complete → verify_calendar_only_retention()"
+    },
+    {
+      "uuid": "rel-actor-func-001",
+      "type": "flow",
+      "source": "actor-systemmonitor-010",
+      "target": "func-monitorappfocus-021",
+      "FlowDescr": "System monitor provides app focus events",
+      "FlowDef": "accessibility_api.focus_change → monitor_app_focus()"
+    },
+    {
+      "uuid": "rel-func-actor-001",
+      "type": "flow",
+      "source": "func-promptuseronlyifuncertain-028",
+      "target": "actor-user-007",
+      "FlowDescr": "Classification prompt displayed to user",
+      "FlowDef": "show_dropdown(classification_options) → user_selection"
+    },
+    {
+      "uuid": "rel-actor-func-002",
+      "type": "flow",
+      "source": "actor-gitsystem-009",
+      "target": "func-scangitforprojectname-027",
+      "FlowDescr": "Git system provides commit data for project analysis",
+      "FlowDef": "git_log() → extract_project_name(commits)"
+    },
+    {
+      "uuid": "rel-func-actor-002",
+      "type": "flow",
+      "source": "func-createcalendarevent-031",
+      "target": "actor-calendarapp-008",
+      "FlowDescr": "Calendar event sent to Calendar.app for storage",
+      "FlowDef": "calendar_event → calendar_app.create_event()"
+    },
+    {
+      "uuid": "rel-func-actor-003",
+      "type": "flow",
+      "source": "func-triggerbreaknotification-036",
+      "target": "actor-notificationcenter-011",
+      "FlowDescr": "Break reminder sent via notification center",
+      "FlowDef": "break_reminder → notification_center.show()"
+    },
+    {
+      "uuid": "rel-func-actor-004",
+      "type": "flow",
+      "source": "func-launchappletimer-037",
+      "target": "actor-appletimer-012",
+      "FlowDescr": "Timer launch request sent to Apple Timer",
+      "FlowDef": "timer_request → apple_timer.start(duration)"
+    }
+  ],
+  "metadata": {
+    "created_by": "ClaudeGraph",
+    "created_at": "/Users/andreas/Documents/Projekte/ClaudeGraph",
+    "version": "1.0.0",
+    "ontology_version": "1.1.0",
+    "design_mode": "architecture_discussion",
+    "project_type": "Mac Activity Tracking App",
+    "design_principles": [
+      "Local-first privacy",
+      "Minimal user interruption", 
+      "Smart defaults with selective prompting",
+      "Separate timing concerns",
+      "Calendar as permanent storage"
+    ]
+  }
+}

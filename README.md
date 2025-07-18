@@ -75,7 +75,10 @@ docker exec -it claudegraph-neo4j cypher-shell -u neo4j -p claudegraph -f /impor
 # Analyze existing project
 python -m commands.grph_architect analyze /path/to/project --store-neo4j
 
-# Or use Claude Code command
+# Or use Claude Code command (short syntax)
+/claudegraph analyze /path/to/project
+
+# Or use legacy command
 /command GrphArchitect analyze /path/to/project
 ```
 
@@ -83,35 +86,38 @@ python -m commands.grph_architect analyze /path/to/project --store-neo4j
 
 ### Commands Available
 
-#### `/command GrphArchitect design`
+#### `/claudegraph design` (New Short Syntax)
 Create architecture for new projects:
 - Interactive design process
 - Ontology-compliant structure
 - Code scaffolding generation
 
-#### `/command GrphArchitect analyze [path]`
+#### `/claudegraph analyze [path]`
 Extract architecture from existing code:
 - grphzer-powered analysis
 - Automatic graph generation
 - Neo4j storage
 
-#### `/command GrphArchitect query [pattern]`
+#### `/claudegraph query --pattern [pattern] | --cypher [query]`
 Query architecture:
 - Natural language patterns
 - Direct Cypher queries
 - Structured insights
 
-#### `/command GrphArchitect impact [component]`
+#### `/claudegraph impact [component]`
 Analyze change impacts:
 - Direct and transitive dependencies
 - Test implications
 - Risk assessment
 
-#### `/command GrphArchitect check`
+#### `/claudegraph check`
 Validate architecture:
 - Ontology compliance
 - Structural integrity
 - Quality metrics
+
+#### Legacy `/command GrphArchitect` syntax
+All commands still available with full syntax for compatibility.
 
 ## Ontology Schema
 
@@ -131,7 +137,7 @@ Based on v1.1.0 with these key node types:
 
 ### 1. New Project Development
 ```
-1. /command GrphArchitect design
+1. /claudegraph design
    → Interactive architecture design
    → Define system structure
    → Generate code scaffolding
@@ -141,29 +147,29 @@ Based on v1.1.0 with these key node types:
    → Maintain graph synchronization
 
 3. Continuous validation
-   → /command GrphArchitect check
+   → /claudegraph check
    → Ensure ontology compliance
 ```
 
 ### 2. Legacy Code Understanding
 ```
-1. /command GrphArchitect analyze
+1. /claudegraph analyze
    → Extract current architecture
    → Identify patterns and issues
 
-2. /command GrphArchitect query
+2. /claudegraph query
    → Explore system structure
    → Understand dependencies
 
 3. Plan improvements
-   → /command GrphArchitect impact
+   → /claudegraph impact
    → Safe refactoring decisions
 ```
 
 ### 3. Change Impact Analysis
 ```
 Before changes:
-→ /command GrphArchitect impact [component]
+→ /claudegraph impact [component]
 → Understand what will be affected
 → Plan testing strategy
 
