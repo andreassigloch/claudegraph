@@ -1,13 +1,15 @@
-# ClaudeGraph
+# ClaudeGraph v3
 
-**Graph-based Architecture Intelligence for Claude Code**
+**Ultra-Simple Architectural Compliance for Claude Code**
 
-ClaudeGraph enables Claude Code to understand and reason about software architecture through graph databases, providing intelligent suggestions and impact analysis for development decisions.
+ClaudeGraph v3 is a markdown-based compliance system that ensures code changes don't violate documented business flows. It replaces complex graph databases with simple Flow → Function → Schema definitions.
 
 ## Overview
 
-ClaudeGraph bridges the gap between code and architecture by:
-- **Extracting architecture** from existing codebases using grphzer
+ClaudeGraph v3 leverages Claude's native vector search by:
+- **Documenting business flows** in simple markdown format
+- **Checking compliance** after code changes
+- **Maintaining abstraction** at the business level
 - **Storing structure** in Neo4j graph database
 - **Providing intelligent queries** for impact analysis
 - **Enabling design-first** development workflows
