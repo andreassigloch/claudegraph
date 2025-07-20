@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(npx expo install:*)",
+      "Bash(npx expo start:*)",
+      "Bash(pkill:*)",
+      "Bash(npm install:*)",
+      "Bash(docker exec:*)",
+      "Bash(neo4j-admin cypher-shell:*)",
+      "Bash(python:*)"
+    ],
+    "deny": []
+  }
+}

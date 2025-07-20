@@ -1,0 +1,1672 @@
+{
+  "nodes": [
+    {
+      "uuid": "c1ef4401",
+      "type": "SYS",
+      "Name": "GraphManagementApp",
+      "Descr": "Production-ready graph management application with collaborative editing and enterprise features"
+    },
+    {
+      "uuid": "2218c550",
+      "type": "UC",
+      "Name": "Graph Creation",
+      "Descr": "Create and manage graph structures with nodes and edges"
+    },
+    {
+      "uuid": "8737db1c",
+      "type": "UC",
+      "Name": "Real-time Collaboration",
+      "Descr": "Multiple users editing graphs simultaneously with conflict resolution"
+    },
+    {
+      "uuid": "fa3d684a",
+      "type": "UC",
+      "Name": "Graph Visualization",
+      "Descr": "Interactive visualization with multiple layout options"
+    },
+    {
+      "uuid": "de5f0237",
+      "type": "UC",
+      "Name": "User Management",
+      "Descr": "User registration, authentication, and role-based access control"
+    },
+    {
+      "uuid": "3d8df0f1",
+      "type": "UC",
+      "Name": "Team Management",
+      "Descr": "Team creation, invitations, and workspace management"
+    },
+    {
+      "uuid": "c9443239",
+      "type": "UC",
+      "Name": "Import Export",
+      "Descr": "Support for multiple graph formats (JSON, GraphML, GEXF, CSV)"
+    },
+    {
+      "uuid": "3991132d",
+      "type": "UC",
+      "Name": "Search and Query",
+      "Descr": "Full-text search and graph query capabilities"
+    },
+    {
+      "uuid": "72d2823b",
+      "type": "UC",
+      "Name": "Version Control",
+      "Descr": "Git-like versioning with branch/merge workflow"
+    },
+    {
+      "uuid": "8461f03e",
+      "type": "UC",
+      "Name": "Billing Management",
+      "Descr": "Subscription tiers, payment processing, and usage tracking"
+    },
+    {
+      "uuid": "98970944",
+      "type": "UC",
+      "Name": "API Access",
+      "Descr": "RESTful and GraphQL API for external integrations"
+    },
+    {
+      "uuid": "b4e2ba4f",
+      "type": "ACTOR",
+      "Name": "WebClient",
+      "Descr": "React frontend application for user interface"
+    },
+    {
+      "uuid": "8d72fac0",
+      "type": "ACTOR",
+      "Name": "APIGateway",
+      "Descr": "Express.js API gateway for request routing"
+    },
+    {
+      "uuid": "35be422d",
+      "type": "ACTOR",
+      "Name": "Database",
+      "Descr": "PostgreSQL database for persistent storage"
+    },
+    {
+      "uuid": "ab4b12da",
+      "type": "ACTOR",
+      "Name": "Cache",
+      "Descr": "Redis cache for session and data caching"
+    },
+    {
+      "uuid": "3be0269e",
+      "type": "ACTOR",
+      "Name": "FileStorage",
+      "Descr": "S3-compatible storage for graph exports and media"
+    },
+    {
+      "uuid": "2b963e1a",
+      "type": "ACTOR",
+      "Name": "PaymentProcessor",
+      "Descr": "Stripe integration for billing and payments"
+    },
+    {
+      "uuid": "43b333f9",
+      "type": "ACTOR",
+      "Name": "EmailService",
+      "Descr": "Email service for notifications and verification"
+    },
+    {
+      "uuid": "b3d45b76",
+      "type": "ACTOR",
+      "Name": "SearchEngine",
+      "Descr": "Elasticsearch for full-text search capabilities"
+    },
+    {
+      "uuid": "4df4446c",
+      "type": "ACTOR",
+      "Name": "WebSocketServer",
+      "Descr": "Socket.IO server for real-time collaboration"
+    },
+    {
+      "uuid": "b0dd9fb8",
+      "type": "ACTOR",
+      "Name": "MonitoringSystem",
+      "Descr": "Prometheus/Grafana for system monitoring"
+    },
+    {
+      "uuid": "b8fe2045",
+      "type": "FCHAIN",
+      "Name": "User Auth Chain",
+      "Descr": "User registration \u2192 Authentication \u2192 Authorization \u2192 Session management"
+    },
+    {
+      "uuid": "32b4e610",
+      "type": "FCHAIN",
+      "Name": "Graph Edit Chain",
+      "Descr": "Graph creation \u2192 Node/edge editing \u2192 Validation \u2192 Persistence \u2192 Real-time sync"
+    },
+    {
+      "uuid": "4f097417",
+      "type": "FCHAIN",
+      "Name": "Collaboration Chain",
+      "Descr": "WebSocket connection \u2192 Operational transform \u2192 Conflict resolution \u2192 Broadcast"
+    },
+    {
+      "uuid": "936b5fc8",
+      "type": "FCHAIN",
+      "Name": "Billing Chain",
+      "Descr": "Subscription creation \u2192 Payment processing \u2192 Usage tracking \u2192 Invoice generation"
+    },
+    {
+      "uuid": "96bf0f9d",
+      "type": "FCHAIN",
+      "Name": "API Chain",
+      "Descr": "Request validation \u2192 Authentication \u2192 Business logic \u2192 Response formatting"
+    },
+    {
+      "uuid": "29a9b5ee",
+      "type": "FCHAIN",
+      "Name": "Search Chain",
+      "Descr": "Query parsing \u2192 Index search \u2192 Result ranking \u2192 Response formatting"
+    },
+    {
+      "uuid": "c6bfaeec",
+      "type": "FCHAIN",
+      "Name": "Export Chain",
+      "Descr": "Graph serialization \u2192 Format conversion \u2192 File generation \u2192 Storage/delivery"
+    },
+    {
+      "uuid": "706cb173",
+      "type": "FCHAIN",
+      "Name": "Version Control Chain",
+      "Descr": "Change tracking \u2192 Diff calculation \u2192 Branch management \u2192 Merge operations"
+    },
+    {
+      "uuid": "886be2b8",
+      "type": "FUNC",
+      "Name": "register_user",
+      "Descr": "User registration with email verification"
+    },
+    {
+      "uuid": "b374d871",
+      "type": "FUNC",
+      "Name": "authenticate_user",
+      "Descr": "User login with JWT token generation"
+    },
+    {
+      "uuid": "de7d9199",
+      "type": "FUNC",
+      "Name": "validate_token",
+      "Descr": "JWT token validation and user authorization"
+    },
+    {
+      "uuid": "9b2a8f74",
+      "type": "FUNC",
+      "Name": "manage_profile",
+      "Descr": "User profile management and preferences"
+    },
+    {
+      "uuid": "ae618f9a",
+      "type": "FUNC",
+      "Name": "create_team",
+      "Descr": "Team creation and member management"
+    },
+    {
+      "uuid": "315bf386",
+      "type": "FUNC",
+      "Name": "invite_user",
+      "Descr": "User invitation system with role assignment"
+    },
+    {
+      "uuid": "bf61bc5b",
+      "type": "FUNC",
+      "Name": "create_graph",
+      "Descr": "Create new graph with metadata"
+    },
+    {
+      "uuid": "96d0ac55",
+      "type": "FUNC",
+      "Name": "update_graph",
+      "Descr": "Update graph properties and structure"
+    },
+    {
+      "uuid": "1b432861",
+      "type": "FUNC",
+      "Name": "delete_graph",
+      "Descr": "Delete graph with cascade cleanup"
+    },
+    {
+      "uuid": "b85ed8bd",
+      "type": "FUNC",
+      "Name": "create_node",
+      "Descr": "Create node with properties"
+    },
+    {
+      "uuid": "bcb81e32",
+      "type": "FUNC",
+      "Name": "update_node",
+      "Descr": "Update node properties"
+    },
+    {
+      "uuid": "9acad9ba",
+      "type": "FUNC",
+      "Name": "delete_node",
+      "Descr": "Delete node with relationship cleanup"
+    },
+    {
+      "uuid": "948f0251",
+      "type": "FUNC",
+      "Name": "create_edge",
+      "Descr": "Create edge between nodes"
+    },
+    {
+      "uuid": "1e54d47b",
+      "type": "FUNC",
+      "Name": "update_edge",
+      "Descr": "Update edge properties"
+    },
+    {
+      "uuid": "946e8a30",
+      "type": "FUNC",
+      "Name": "delete_edge",
+      "Descr": "Delete edge relationship"
+    },
+    {
+      "uuid": "a0658fc7",
+      "type": "FUNC",
+      "Name": "broadcast_change",
+      "Descr": "Broadcast graph changes to collaborators"
+    },
+    {
+      "uuid": "d9f6fc5d",
+      "type": "FUNC",
+      "Name": "resolve_conflict",
+      "Descr": "Operational transform conflict resolution"
+    },
+    {
+      "uuid": "995ffb00",
+      "type": "FUNC",
+      "Name": "track_presence",
+      "Descr": "Track user presence and cursor position"
+    },
+    {
+      "uuid": "8d870722",
+      "type": "FUNC",
+      "Name": "handle_comment",
+      "Descr": "Handle node/edge comments and annotations"
+    },
+    {
+      "uuid": "c3564d6d",
+      "type": "FUNC",
+      "Name": "import_graph",
+      "Descr": "Import graph from various formats"
+    },
+    {
+      "uuid": "d75ea60e",
+      "type": "FUNC",
+      "Name": "export_graph",
+      "Descr": "Export graph to specified format"
+    },
+    {
+      "uuid": "0c6f27bc",
+      "type": "FUNC",
+      "Name": "validate_format",
+      "Descr": "Validate imported graph format"
+    },
+    {
+      "uuid": "b19ca1b3",
+      "type": "FUNC",
+      "Name": "convert_format",
+      "Descr": "Convert between graph formats"
+    },
+    {
+      "uuid": "8d25a98d",
+      "type": "FUNC",
+      "Name": "search_graphs",
+      "Descr": "Full-text search across graphs"
+    },
+    {
+      "uuid": "019b46eb",
+      "type": "FUNC",
+      "Name": "query_graph",
+      "Descr": "Execute graph query language"
+    },
+    {
+      "uuid": "c2fdf58c",
+      "type": "FUNC",
+      "Name": "index_graph",
+      "Descr": "Index graph for search"
+    },
+    {
+      "uuid": "8666512f",
+      "type": "FUNC",
+      "Name": "filter_results",
+      "Descr": "Apply filters to search results"
+    },
+    {
+      "uuid": "b5fe464c",
+      "type": "FUNC",
+      "Name": "create_subscription",
+      "Descr": "Create user subscription"
+    },
+    {
+      "uuid": "d28e1787",
+      "type": "FUNC",
+      "Name": "process_payment",
+      "Descr": "Process payment through Stripe"
+    },
+    {
+      "uuid": "5aa25e7b",
+      "type": "FUNC",
+      "Name": "track_usage",
+      "Descr": "Track user usage metrics"
+    },
+    {
+      "uuid": "69107b6f",
+      "type": "FUNC",
+      "Name": "generate_invoice",
+      "Descr": "Generate and send invoices"
+    },
+    {
+      "uuid": "358a98cb",
+      "type": "FUNC",
+      "Name": "validate_request",
+      "Descr": "Validate API request format"
+    },
+    {
+      "uuid": "d70e9386",
+      "type": "FUNC",
+      "Name": "authenticate_api",
+      "Descr": "Authenticate API requests"
+    },
+    {
+      "uuid": "e69d3735",
+      "type": "FUNC",
+      "Name": "rate_limit",
+      "Descr": "Apply rate limiting to API calls"
+    },
+    {
+      "uuid": "c8e5a9f3",
+      "type": "FUNC",
+      "Name": "format_response",
+      "Descr": "Format API responses"
+    },
+    {
+      "uuid": "7c3dac2d",
+      "type": "FUNC",
+      "Name": "create_version",
+      "Descr": "Create new graph version"
+    },
+    {
+      "uuid": "5cc67b12",
+      "type": "FUNC",
+      "Name": "compare_versions",
+      "Descr": "Compare graph versions"
+    },
+    {
+      "uuid": "8581838e",
+      "type": "FUNC",
+      "Name": "merge_versions",
+      "Descr": "Merge graph versions"
+    },
+    {
+      "uuid": "71f6f54f",
+      "type": "FUNC",
+      "Name": "rollback_version",
+      "Descr": "Rollback to previous version"
+    },
+    {
+      "uuid": "cbe483d3",
+      "type": "REQ",
+      "Name": "Scalability",
+      "Descr": "Support 10,000+ concurrent users with sub-100ms response times"
+    },
+    {
+      "uuid": "eaff3762",
+      "type": "REQ",
+      "Name": "Availability",
+      "Descr": "99.9% uptime SLA with automatic failover"
+    },
+    {
+      "uuid": "b3b0722b",
+      "type": "REQ",
+      "Name": "Security",
+      "Descr": "SOC 2 Type II, GDPR compliance, encryption at rest and in transit"
+    },
+    {
+      "uuid": "11fadb26",
+      "type": "REQ",
+      "Name": "Performance",
+      "Descr": "Handle 100,000+ nodes per graph with WebGL rendering"
+    },
+    {
+      "uuid": "d9b67c35",
+      "type": "REQ",
+      "Name": "Collaboration",
+      "Descr": "Real-time editing with operational transform conflict resolution"
+    },
+    {
+      "uuid": "446da0f3",
+      "type": "REQ",
+      "Name": "Integration",
+      "Descr": "OAuth2, Stripe, Elasticsearch, and monitoring system integration"
+    },
+    {
+      "uuid": "9fd57267",
+      "type": "REQ",
+      "Name": "API Limits",
+      "Descr": "1,000 requests per hour rate limiting with proper error handling"
+    },
+    {
+      "uuid": "6887b1f4",
+      "type": "REQ",
+      "Name": "Data Protection",
+      "Descr": "AES-256 encryption, PII handling, configurable retention policies"
+    },
+    {
+      "uuid": "65389ac0",
+      "type": "REQ",
+      "Name": "Monitoring",
+      "Descr": "Comprehensive metrics, alerting, and audit trail"
+    },
+    {
+      "uuid": "7d5f2fa8",
+      "type": "REQ",
+      "Name": "Backup Recovery",
+      "Descr": "Daily backups with 30-day retention and point-in-time recovery"
+    },
+    {
+      "uuid": "2876b642",
+      "type": "SCHEMA",
+      "Name": "User",
+      "Descr": "User entity with profile, preferences, and authentication data",
+      "Struct": "{'id': 'uuid', 'email': 'string', 'username': 'string', 'profile': 'object', 'role': 'enum'}"
+    },
+    {
+      "uuid": "9548a6b4",
+      "type": "SCHEMA",
+      "Name": "Graph",
+      "Descr": "Graph entity with metadata and structure",
+      "Struct": "{'id': 'uuid', 'name': 'string', 'description': 'string', 'nodes': 'array', 'edges': 'array', 'created_by': 'uuid'}"
+    },
+    {
+      "uuid": "764d59c7",
+      "type": "SCHEMA",
+      "Name": "Node",
+      "Descr": "Graph node with properties and position",
+      "Struct": "{'id': 'uuid', 'graph_id': 'uuid', 'type': 'string', 'properties': 'object', 'position': 'object'}"
+    },
+    {
+      "uuid": "78a33ec8",
+      "type": "SCHEMA",
+      "Name": "Edge",
+      "Descr": "Graph edge connecting two nodes",
+      "Struct": "{'id': 'uuid', 'graph_id': 'uuid', 'source': 'uuid', 'target': 'uuid', 'type': 'string', 'properties': 'object'}"
+    },
+    {
+      "uuid": "9e75cd3e",
+      "type": "SCHEMA",
+      "Name": "Team",
+      "Descr": "Team entity for collaboration",
+      "Struct": "{'id': 'uuid', 'name': 'string', 'description': 'string', 'members': 'array', 'owner': 'uuid'}"
+    },
+    {
+      "uuid": "f006c93e",
+      "type": "SCHEMA",
+      "Name": "Subscription",
+      "Descr": "User subscription and billing info",
+      "Struct": "{'id': 'uuid', 'user_id': 'uuid', 'tier': 'enum', 'status': 'enum', 'billing_cycle': 'enum'}"
+    },
+    {
+      "uuid": "b1503ecf",
+      "type": "SCHEMA",
+      "Name": "Version",
+      "Descr": "Graph version for version control",
+      "Struct": "{'id': 'uuid', 'graph_id': 'uuid', 'version': 'string', 'changes': 'object', 'created_by': 'uuid'}"
+    },
+    {
+      "uuid": "80780161",
+      "type": "SCHEMA",
+      "Name": "Comment",
+      "Descr": "Comments on nodes and edges",
+      "Struct": "{'id': 'uuid', 'target_id': 'uuid', 'target_type': 'enum', 'content': 'string', 'author': 'uuid'}"
+    },
+    {
+      "uuid": "53e8ed99",
+      "type": "SCHEMA",
+      "Name": "ApiKey",
+      "Descr": "API key for external access",
+      "Struct": "{'id': 'uuid', 'user_id': 'uuid', 'key': 'string', 'scopes': 'array', 'expires_at': 'datetime'}"
+    },
+    {
+      "uuid": "df6980fc",
+      "type": "SCHEMA",
+      "Name": "Usage",
+      "Descr": "Usage tracking metrics",
+      "Struct": "{'id': 'uuid', 'user_id': 'uuid', 'metric': 'string', 'value': 'number', 'timestamp': 'datetime'}"
+    },
+    {
+      "uuid": "7b2c8365",
+      "type": "TEST",
+      "Name": "User Registration Test",
+      "Descr": "Test user registration flow with email verification"
+    },
+    {
+      "uuid": "68409970",
+      "type": "TEST",
+      "Name": "Graph Collaboration Test",
+      "Descr": "Test real-time collaboration with conflict resolution"
+    },
+    {
+      "uuid": "5071d287",
+      "type": "TEST",
+      "Name": "API Rate Limiting Test",
+      "Descr": "Test API rate limiting and proper error responses"
+    },
+    {
+      "uuid": "5e5c41e8",
+      "type": "TEST",
+      "Name": "Performance Load Test",
+      "Descr": "Test system performance with 10,000+ concurrent users"
+    },
+    {
+      "uuid": "7ac4f5cf",
+      "type": "TEST",
+      "Name": "Security Penetration Test",
+      "Descr": "Test system security and vulnerability assessment"
+    },
+    {
+      "uuid": "d3e4fc7c",
+      "type": "TEST",
+      "Name": "Backup Recovery Test",
+      "Descr": "Test backup and disaster recovery procedures"
+    },
+    {
+      "uuid": "91a0f8d1",
+      "type": "TEST",
+      "Name": "Payment Processing Test",
+      "Descr": "Test Stripe integration and subscription management"
+    },
+    {
+      "uuid": "ee64a8bc",
+      "type": "TEST",
+      "Name": "Search Integration Test",
+      "Descr": "Test Elasticsearch integration and search functionality"
+    },
+    {
+      "uuid": "5c90e473",
+      "type": "MOD",
+      "Name": "UserService",
+      "Descr": "User management and authentication module"
+    },
+    {
+      "uuid": "d447b879",
+      "type": "MOD",
+      "Name": "GraphService",
+      "Descr": "Graph CRUD operations and management"
+    },
+    {
+      "uuid": "8b662304",
+      "type": "MOD",
+      "Name": "CollaborationService",
+      "Descr": "Real-time collaboration and WebSocket handling"
+    },
+    {
+      "uuid": "5a1a1dae",
+      "type": "MOD",
+      "Name": "BillingService",
+      "Descr": "Subscription and payment processing"
+    },
+    {
+      "uuid": "a819d4fb",
+      "type": "MOD",
+      "Name": "SearchService",
+      "Descr": "Full-text search and graph querying"
+    },
+    {
+      "uuid": "02a348c3",
+      "type": "MOD",
+      "Name": "ExportService",
+      "Descr": "Graph import/export and format conversion"
+    },
+    {
+      "uuid": "263f0b25",
+      "type": "MOD",
+      "Name": "VersionService",
+      "Descr": "Version control and change tracking"
+    },
+    {
+      "uuid": "825c7cdb",
+      "type": "MOD",
+      "Name": "APIGateway",
+      "Descr": "API request routing and validation"
+    },
+    {
+      "uuid": "c46d5b9a",
+      "type": "MOD",
+      "Name": "AuthMiddleware",
+      "Descr": "Authentication and authorization middleware"
+    },
+    {
+      "uuid": "2680b177",
+      "type": "MOD",
+      "Name": "MonitoringService",
+      "Descr": "System monitoring and metrics collection"
+    }
+  ],
+  "relationships": [
+    {
+      "uuid": "cc4c7c1c",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "2218c550"
+    },
+    {
+      "uuid": "0184a45e",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "8737db1c"
+    },
+    {
+      "uuid": "bf0d5cc6",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "fa3d684a"
+    },
+    {
+      "uuid": "c56699be",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "de5f0237"
+    },
+    {
+      "uuid": "028cf96d",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "3d8df0f1"
+    },
+    {
+      "uuid": "c640925b",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "c9443239"
+    },
+    {
+      "uuid": "5352f429",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "3991132d"
+    },
+    {
+      "uuid": "e6bdbfb0",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "72d2823b"
+    },
+    {
+      "uuid": "21dd7fda",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "8461f03e"
+    },
+    {
+      "uuid": "037382e0",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "98970944"
+    },
+    {
+      "uuid": "d7a542df",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "b8fe2045"
+    },
+    {
+      "uuid": "f86c6440",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "32b4e610"
+    },
+    {
+      "uuid": "47d14716",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "4f097417"
+    },
+    {
+      "uuid": "cf81d6ef",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "936b5fc8"
+    },
+    {
+      "uuid": "9761ce40",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "96bf0f9d"
+    },
+    {
+      "uuid": "798a642a",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "29a9b5ee"
+    },
+    {
+      "uuid": "2c400555",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "c6bfaeec"
+    },
+    {
+      "uuid": "7b59d0dd",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "706cb173"
+    },
+    {
+      "uuid": "28b39f7c",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "5c90e473"
+    },
+    {
+      "uuid": "0445adf1",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "d447b879"
+    },
+    {
+      "uuid": "3d31f94c",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "8b662304"
+    },
+    {
+      "uuid": "4f549ad9",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "5a1a1dae"
+    },
+    {
+      "uuid": "76ccb4a0",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "a819d4fb"
+    },
+    {
+      "uuid": "9be8c1ff",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "02a348c3"
+    },
+    {
+      "uuid": "3dc63a3e",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "263f0b25"
+    },
+    {
+      "uuid": "53c690b0",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "825c7cdb"
+    },
+    {
+      "uuid": "b69acda4",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "c46d5b9a"
+    },
+    {
+      "uuid": "9dc82944",
+      "type": "compose",
+      "source": "c1ef4401",
+      "target": "2680b177"
+    },
+    {
+      "uuid": "cde916eb",
+      "type": "satisfy",
+      "source": "de5f0237",
+      "target": "b3b0722b"
+    },
+    {
+      "uuid": "53758cdc",
+      "type": "satisfy",
+      "source": "8737db1c",
+      "target": "d9b67c35"
+    },
+    {
+      "uuid": "19c6152f",
+      "type": "satisfy",
+      "source": "fa3d684a",
+      "target": "11fadb26"
+    },
+    {
+      "uuid": "c08e2a37",
+      "type": "satisfy",
+      "source": "8461f03e",
+      "target": "446da0f3"
+    },
+    {
+      "uuid": "235d729d",
+      "type": "satisfy",
+      "source": "98970944",
+      "target": "9fd57267"
+    },
+    {
+      "uuid": "cc159925",
+      "type": "satisfy",
+      "source": "3d8df0f1",
+      "target": "6887b1f4"
+    },
+    {
+      "uuid": "02f1c4df",
+      "type": "satisfy",
+      "source": "3991132d",
+      "target": "65389ac0"
+    },
+    {
+      "uuid": "f1433c69",
+      "type": "satisfy",
+      "source": "72d2823b",
+      "target": "7d5f2fa8"
+    },
+    {
+      "uuid": "51dbce4b",
+      "type": "satisfy",
+      "source": "c9443239",
+      "target": "cbe483d3"
+    },
+    {
+      "uuid": "7fee5684",
+      "type": "satisfy",
+      "source": "2218c550",
+      "target": "eaff3762"
+    },
+    {
+      "uuid": "53b75706",
+      "type": "verify",
+      "source": "b3b0722b",
+      "target": "7b2c8365"
+    },
+    {
+      "uuid": "05f8c390",
+      "type": "verify",
+      "source": "d9b67c35",
+      "target": "68409970"
+    },
+    {
+      "uuid": "d505ee0d",
+      "type": "verify",
+      "source": "9fd57267",
+      "target": "5071d287"
+    },
+    {
+      "uuid": "abfebc7c",
+      "type": "verify",
+      "source": "cbe483d3",
+      "target": "5e5c41e8"
+    },
+    {
+      "uuid": "409c1d10",
+      "type": "verify",
+      "source": "b3b0722b",
+      "target": "7ac4f5cf"
+    },
+    {
+      "uuid": "33a2f223",
+      "type": "verify",
+      "source": "7d5f2fa8",
+      "target": "d3e4fc7c"
+    },
+    {
+      "uuid": "7b96c840",
+      "type": "verify",
+      "source": "446da0f3",
+      "target": "91a0f8d1"
+    },
+    {
+      "uuid": "1b6610e6",
+      "type": "verify",
+      "source": "11fadb26",
+      "target": "ee64a8bc"
+    },
+    {
+      "uuid": "71403652",
+      "type": "allocate",
+      "source": "b4e2ba4f",
+      "target": "fa3d684a"
+    },
+    {
+      "uuid": "cc5eff34",
+      "type": "allocate",
+      "source": "8d72fac0",
+      "target": "98970944"
+    },
+    {
+      "uuid": "113f0f3c",
+      "type": "allocate",
+      "source": "35be422d",
+      "target": "2218c550"
+    },
+    {
+      "uuid": "40e5f601",
+      "type": "allocate",
+      "source": "ab4b12da",
+      "target": "8737db1c"
+    },
+    {
+      "uuid": "ff02e381",
+      "type": "allocate",
+      "source": "2b963e1a",
+      "target": "8461f03e"
+    },
+    {
+      "uuid": "167aff42",
+      "type": "allocate",
+      "source": "43b333f9",
+      "target": "de5f0237"
+    },
+    {
+      "uuid": "b9214e5b",
+      "type": "allocate",
+      "source": "b3d45b76",
+      "target": "3991132d"
+    },
+    {
+      "uuid": "5da83012",
+      "type": "allocate",
+      "source": "4df4446c",
+      "target": "8737db1c"
+    },
+    {
+      "uuid": "68e65675",
+      "type": "allocate",
+      "source": "3be0269e",
+      "target": "c9443239"
+    },
+    {
+      "uuid": "7d934078",
+      "type": "allocate",
+      "source": "b0dd9fb8",
+      "target": "98970944"
+    },
+    {
+      "uuid": "6d3ac8f0",
+      "type": "compose",
+      "source": "5c90e473",
+      "target": "886be2b8"
+    },
+    {
+      "uuid": "75c031d1",
+      "type": "compose",
+      "source": "5c90e473",
+      "target": "b374d871"
+    },
+    {
+      "uuid": "b07662fe",
+      "type": "compose",
+      "source": "5c90e473",
+      "target": "de7d9199"
+    },
+    {
+      "uuid": "cf458f20",
+      "type": "compose",
+      "source": "5c90e473",
+      "target": "9b2a8f74"
+    },
+    {
+      "uuid": "cea302ea",
+      "type": "compose",
+      "source": "d447b879",
+      "target": "bf61bc5b"
+    },
+    {
+      "uuid": "697a539a",
+      "type": "compose",
+      "source": "d447b879",
+      "target": "96d0ac55"
+    },
+    {
+      "uuid": "ae41482f",
+      "type": "compose",
+      "source": "d447b879",
+      "target": "1b432861"
+    },
+    {
+      "uuid": "c6f5b10f",
+      "type": "compose",
+      "source": "d447b879",
+      "target": "b85ed8bd"
+    },
+    {
+      "uuid": "be643470",
+      "type": "compose",
+      "source": "d447b879",
+      "target": "bcb81e32"
+    },
+    {
+      "uuid": "aa6af281",
+      "type": "compose",
+      "source": "d447b879",
+      "target": "9acad9ba"
+    },
+    {
+      "uuid": "94a5e34b",
+      "type": "compose",
+      "source": "d447b879",
+      "target": "948f0251"
+    },
+    {
+      "uuid": "877130ac",
+      "type": "compose",
+      "source": "d447b879",
+      "target": "1e54d47b"
+    },
+    {
+      "uuid": "95718adf",
+      "type": "compose",
+      "source": "d447b879",
+      "target": "946e8a30"
+    },
+    {
+      "uuid": "f0a2da58",
+      "type": "compose",
+      "source": "8b662304",
+      "target": "a0658fc7"
+    },
+    {
+      "uuid": "a0b10d7f",
+      "type": "compose",
+      "source": "8b662304",
+      "target": "d9f6fc5d"
+    },
+    {
+      "uuid": "a2ca9642",
+      "type": "compose",
+      "source": "8b662304",
+      "target": "995ffb00"
+    },
+    {
+      "uuid": "d26fec0d",
+      "type": "compose",
+      "source": "8b662304",
+      "target": "8d870722"
+    },
+    {
+      "uuid": "a6a1c8ad",
+      "type": "compose",
+      "source": "5a1a1dae",
+      "target": "b5fe464c"
+    },
+    {
+      "uuid": "78d3a696",
+      "type": "compose",
+      "source": "5a1a1dae",
+      "target": "d28e1787"
+    },
+    {
+      "uuid": "bbc7f5ba",
+      "type": "compose",
+      "source": "5a1a1dae",
+      "target": "5aa25e7b"
+    },
+    {
+      "uuid": "51fd5626",
+      "type": "compose",
+      "source": "5a1a1dae",
+      "target": "69107b6f"
+    },
+    {
+      "uuid": "76f4b015",
+      "type": "compose",
+      "source": "a819d4fb",
+      "target": "8d25a98d"
+    },
+    {
+      "uuid": "a677e2fb",
+      "type": "compose",
+      "source": "a819d4fb",
+      "target": "019b46eb"
+    },
+    {
+      "uuid": "3f7c066e",
+      "type": "compose",
+      "source": "a819d4fb",
+      "target": "c2fdf58c"
+    },
+    {
+      "uuid": "24f69f0b",
+      "type": "compose",
+      "source": "a819d4fb",
+      "target": "8666512f"
+    },
+    {
+      "uuid": "74b43ef3",
+      "type": "compose",
+      "source": "02a348c3",
+      "target": "c3564d6d"
+    },
+    {
+      "uuid": "644546bb",
+      "type": "compose",
+      "source": "02a348c3",
+      "target": "d75ea60e"
+    },
+    {
+      "uuid": "a80f2067",
+      "type": "compose",
+      "source": "02a348c3",
+      "target": "0c6f27bc"
+    },
+    {
+      "uuid": "70f93479",
+      "type": "compose",
+      "source": "02a348c3",
+      "target": "b19ca1b3"
+    },
+    {
+      "uuid": "e834c575",
+      "type": "compose",
+      "source": "263f0b25",
+      "target": "7c3dac2d"
+    },
+    {
+      "uuid": "61f52654",
+      "type": "compose",
+      "source": "263f0b25",
+      "target": "5cc67b12"
+    },
+    {
+      "uuid": "204aacec",
+      "type": "compose",
+      "source": "263f0b25",
+      "target": "8581838e"
+    },
+    {
+      "uuid": "1e4a2647",
+      "type": "compose",
+      "source": "263f0b25",
+      "target": "71f6f54f"
+    },
+    {
+      "uuid": "34c84a07",
+      "type": "compose",
+      "source": "825c7cdb",
+      "target": "358a98cb"
+    },
+    {
+      "uuid": "de187678",
+      "type": "compose",
+      "source": "825c7cdb",
+      "target": "d70e9386"
+    },
+    {
+      "uuid": "3ac63205",
+      "type": "compose",
+      "source": "825c7cdb",
+      "target": "e69d3735"
+    },
+    {
+      "uuid": "6ac966f8",
+      "type": "compose",
+      "source": "825c7cdb",
+      "target": "c8e5a9f3"
+    },
+    {
+      "uuid": "366f3a69",
+      "type": "compose",
+      "source": "c46d5b9a",
+      "target": "de7d9199"
+    },
+    {
+      "uuid": "42b2e600",
+      "type": "compose",
+      "source": "c46d5b9a",
+      "target": "b374d871"
+    },
+    {
+      "uuid": "a901ae66",
+      "type": "compose",
+      "source": "2680b177",
+      "target": "5aa25e7b"
+    },
+    {
+      "uuid": "580fe92b",
+      "type": "relation",
+      "source": "886be2b8",
+      "target": "2876b642",
+      "Description": "Function register_user uses schema User"
+    },
+    {
+      "uuid": "f3f4a622",
+      "type": "relation",
+      "source": "b374d871",
+      "target": "2876b642",
+      "Description": "Function authenticate_user uses schema User"
+    },
+    {
+      "uuid": "96a90db3",
+      "type": "relation",
+      "source": "bf61bc5b",
+      "target": "9548a6b4",
+      "Description": "Function create_graph uses schema Graph"
+    },
+    {
+      "uuid": "bf2b2fca",
+      "type": "relation",
+      "source": "96d0ac55",
+      "target": "9548a6b4",
+      "Description": "Function update_graph uses schema Graph"
+    },
+    {
+      "uuid": "585dd6f1",
+      "type": "relation",
+      "source": "b85ed8bd",
+      "target": "764d59c7",
+      "Description": "Function create_node uses schema Node"
+    },
+    {
+      "uuid": "faebf3bd",
+      "type": "relation",
+      "source": "bcb81e32",
+      "target": "764d59c7",
+      "Description": "Function update_node uses schema Node"
+    },
+    {
+      "uuid": "b9143ec3",
+      "type": "relation",
+      "source": "948f0251",
+      "target": "78a33ec8",
+      "Description": "Function create_edge uses schema Edge"
+    },
+    {
+      "uuid": "6b3f88c5",
+      "type": "relation",
+      "source": "1e54d47b",
+      "target": "78a33ec8",
+      "Description": "Function update_edge uses schema Edge"
+    },
+    {
+      "uuid": "31c9fe03",
+      "type": "relation",
+      "source": "ae618f9a",
+      "target": "9e75cd3e",
+      "Description": "Function create_team uses schema Team"
+    },
+    {
+      "uuid": "e38b2aed",
+      "type": "relation",
+      "source": "315bf386",
+      "target": "9e75cd3e",
+      "Description": "Function invite_user uses schema Team"
+    },
+    {
+      "uuid": "bf9843f7",
+      "type": "relation",
+      "source": "b5fe464c",
+      "target": "f006c93e",
+      "Description": "Function create_subscription uses schema Subscription"
+    },
+    {
+      "uuid": "9b731db8",
+      "type": "relation",
+      "source": "d28e1787",
+      "target": "f006c93e",
+      "Description": "Function process_payment uses schema Subscription"
+    },
+    {
+      "uuid": "d0e72f63",
+      "type": "relation",
+      "source": "5aa25e7b",
+      "target": "df6980fc",
+      "Description": "Function track_usage uses schema Usage"
+    },
+    {
+      "uuid": "e5f3d82f",
+      "type": "relation",
+      "source": "7c3dac2d",
+      "target": "b1503ecf",
+      "Description": "Function create_version uses schema Version"
+    },
+    {
+      "uuid": "00b10c5f",
+      "type": "relation",
+      "source": "8d870722",
+      "target": "80780161",
+      "Description": "Function handle_comment uses schema Comment"
+    },
+    {
+      "uuid": "05da8d51",
+      "type": "relation",
+      "source": "d70e9386",
+      "target": "53e8ed99",
+      "Description": "Function authenticate_api uses schema ApiKey"
+    },
+    {
+      "uuid": "1f6c9759",
+      "type": "relation",
+      "source": "b374d871",
+      "target": "35be422d",
+      "Description": "Function authenticate_user interacts with Database"
+    },
+    {
+      "uuid": "06aeb1b3",
+      "type": "relation",
+      "source": "bf61bc5b",
+      "target": "35be422d",
+      "Description": "Function create_graph interacts with Database"
+    },
+    {
+      "uuid": "0699d584",
+      "type": "relation",
+      "source": "a0658fc7",
+      "target": "4df4446c",
+      "Description": "Function broadcast_change interacts with WebSocketServer"
+    },
+    {
+      "uuid": "d6876656",
+      "type": "relation",
+      "source": "d28e1787",
+      "target": "2b963e1a",
+      "Description": "Function process_payment interacts with PaymentProcessor"
+    },
+    {
+      "uuid": "9701e11d",
+      "type": "relation",
+      "source": "8d25a98d",
+      "target": "b3d45b76",
+      "Description": "Function search_graphs interacts with SearchEngine"
+    },
+    {
+      "uuid": "a2585cef",
+      "type": "relation",
+      "source": "d75ea60e",
+      "target": "3be0269e",
+      "Description": "Function export_graph interacts with FileStorage"
+    },
+    {
+      "uuid": "63951243",
+      "type": "relation",
+      "source": "358a98cb",
+      "target": "8d72fac0",
+      "Description": "Function validate_request interacts with APIGateway"
+    },
+    {
+      "uuid": "ed1a40a1",
+      "type": "relation",
+      "source": "5aa25e7b",
+      "target": "b0dd9fb8",
+      "Description": "Function track_usage interacts with MonitoringSystem"
+    },
+    {
+      "uuid": "b18f699b",
+      "type": "relation",
+      "source": "c3564d6d",
+      "target": "3be0269e",
+      "Description": "Function import_graph interacts with FileStorage"
+    },
+    {
+      "uuid": "8a9bac37",
+      "type": "relation",
+      "source": "c2fdf58c",
+      "target": "b3d45b76",
+      "Description": "Function index_graph interacts with SearchEngine"
+    },
+    {
+      "uuid": "a297718a",
+      "type": "compose",
+      "source": "b8fe2045",
+      "target": "886be2b8"
+    },
+    {
+      "uuid": "53ff8c2c",
+      "type": "compose",
+      "source": "b8fe2045",
+      "target": "b374d871"
+    },
+    {
+      "uuid": "806122d1",
+      "type": "compose",
+      "source": "b8fe2045",
+      "target": "de7d9199"
+    },
+    {
+      "uuid": "193e4938",
+      "type": "compose",
+      "source": "32b4e610",
+      "target": "bf61bc5b"
+    },
+    {
+      "uuid": "295be75e",
+      "type": "compose",
+      "source": "32b4e610",
+      "target": "b85ed8bd"
+    },
+    {
+      "uuid": "33aa7557",
+      "type": "compose",
+      "source": "32b4e610",
+      "target": "bcb81e32"
+    },
+    {
+      "uuid": "41ad0639",
+      "type": "compose",
+      "source": "32b4e610",
+      "target": "a0658fc7"
+    },
+    {
+      "uuid": "c81bbbd3",
+      "type": "compose",
+      "source": "4f097417",
+      "target": "a0658fc7"
+    },
+    {
+      "uuid": "49a06815",
+      "type": "compose",
+      "source": "4f097417",
+      "target": "d9f6fc5d"
+    },
+    {
+      "uuid": "79b8b8c4",
+      "type": "compose",
+      "source": "4f097417",
+      "target": "995ffb00"
+    },
+    {
+      "uuid": "28d7e9c3",
+      "type": "compose",
+      "source": "936b5fc8",
+      "target": "b5fe464c"
+    },
+    {
+      "uuid": "afad2f37",
+      "type": "compose",
+      "source": "936b5fc8",
+      "target": "d28e1787"
+    },
+    {
+      "uuid": "436a44a2",
+      "type": "compose",
+      "source": "936b5fc8",
+      "target": "5aa25e7b"
+    },
+    {
+      "uuid": "50bbe9a5",
+      "type": "compose",
+      "source": "936b5fc8",
+      "target": "69107b6f"
+    },
+    {
+      "uuid": "013a284e",
+      "type": "compose",
+      "source": "96bf0f9d",
+      "target": "358a98cb"
+    },
+    {
+      "uuid": "15aa4a03",
+      "type": "compose",
+      "source": "96bf0f9d",
+      "target": "d70e9386"
+    },
+    {
+      "uuid": "9504b38b",
+      "type": "compose",
+      "source": "96bf0f9d",
+      "target": "e69d3735"
+    },
+    {
+      "uuid": "5a5f221e",
+      "type": "compose",
+      "source": "96bf0f9d",
+      "target": "c8e5a9f3"
+    },
+    {
+      "uuid": "f12a7f17",
+      "type": "compose",
+      "source": "29a9b5ee",
+      "target": "8d25a98d"
+    },
+    {
+      "uuid": "e2cac844",
+      "type": "compose",
+      "source": "29a9b5ee",
+      "target": "019b46eb"
+    },
+    {
+      "uuid": "77b1e303",
+      "type": "compose",
+      "source": "29a9b5ee",
+      "target": "c2fdf58c"
+    },
+    {
+      "uuid": "f90d60b9",
+      "type": "compose",
+      "source": "29a9b5ee",
+      "target": "8666512f"
+    },
+    {
+      "uuid": "be07dc11",
+      "type": "compose",
+      "source": "c6bfaeec",
+      "target": "d75ea60e"
+    },
+    {
+      "uuid": "662c8858",
+      "type": "compose",
+      "source": "c6bfaeec",
+      "target": "b19ca1b3"
+    },
+    {
+      "uuid": "a5f31654",
+      "type": "compose",
+      "source": "c6bfaeec",
+      "target": "0c6f27bc"
+    },
+    {
+      "uuid": "33b5970c",
+      "type": "compose",
+      "source": "706cb173",
+      "target": "7c3dac2d"
+    },
+    {
+      "uuid": "ef9beab5",
+      "type": "compose",
+      "source": "706cb173",
+      "target": "5cc67b12"
+    },
+    {
+      "uuid": "8b027b12",
+      "type": "compose",
+      "source": "706cb173",
+      "target": "8581838e"
+    },
+    {
+      "uuid": "2eb163a4",
+      "type": "compose",
+      "source": "706cb173",
+      "target": "71f6f54f"
+    },
+    {
+      "uuid": "9a86a7ea",
+      "type": "flow",
+      "source": "886be2b8",
+      "target": "b374d871",
+      "FlowDescr": "User registration flows to authentication",
+      "FlowDef": "Flow from register_user to authenticate_user"
+    },
+    {
+      "uuid": "fc2d2301",
+      "type": "flow",
+      "source": "b374d871",
+      "target": "de7d9199",
+      "FlowDescr": "Authentication flows to token validation",
+      "FlowDef": "Flow from authenticate_user to validate_token"
+    },
+    {
+      "uuid": "4a7ea9ff",
+      "type": "flow",
+      "source": "bf61bc5b",
+      "target": "b85ed8bd",
+      "FlowDescr": "Graph creation flows to node creation",
+      "FlowDef": "Flow from create_graph to create_node"
+    },
+    {
+      "uuid": "5ef65915",
+      "type": "flow",
+      "source": "b85ed8bd",
+      "target": "a0658fc7",
+      "FlowDescr": "Node creation flows to change broadcast",
+      "FlowDef": "Flow from create_node to broadcast_change"
+    },
+    {
+      "uuid": "a208ccca",
+      "type": "flow",
+      "source": "a0658fc7",
+      "target": "d9f6fc5d",
+      "FlowDescr": "Change broadcast flows to conflict resolution",
+      "FlowDef": "Flow from broadcast_change to resolve_conflict"
+    },
+    {
+      "uuid": "32a78787",
+      "type": "flow",
+      "source": "358a98cb",
+      "target": "d70e9386",
+      "FlowDescr": "Request validation flows to API authentication",
+      "FlowDef": "Flow from validate_request to authenticate_api"
+    },
+    {
+      "uuid": "c36d3ca1",
+      "type": "flow",
+      "source": "d70e9386",
+      "target": "e69d3735",
+      "FlowDescr": "API authentication flows to rate limiting",
+      "FlowDef": "Flow from authenticate_api to rate_limit"
+    },
+    {
+      "uuid": "36a6d034",
+      "type": "flow",
+      "source": "8d25a98d",
+      "target": "8666512f",
+      "FlowDescr": "Graph search flows to result filtering",
+      "FlowDef": "Flow from search_graphs to filter_results"
+    },
+    {
+      "uuid": "261d21f4",
+      "type": "flow",
+      "source": "b5fe464c",
+      "target": "d28e1787",
+      "FlowDescr": "Subscription creation flows to payment processing",
+      "FlowDef": "Flow from create_subscription to process_payment"
+    },
+    {
+      "uuid": "241992e7",
+      "type": "flow",
+      "source": "d28e1787",
+      "target": "5aa25e7b",
+      "FlowDescr": "Payment processing flows to usage tracking",
+      "FlowDef": "Flow from process_payment to track_usage"
+    }
+  ],
+  "metadata": {
+    "project_name": "GraphManagementApp",
+    "total_nodes": 106,
+    "total_relationships": 161,
+    "ontology_version": "1.1.0",
+    "design_method": "requirements_driven_architecture",
+    "source_document": "GRAPH_MANAGEMENT_REQUIREMENTS.md"
+  }
+}
