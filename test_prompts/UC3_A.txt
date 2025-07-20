@@ -1,0 +1,12 @@
+You are working on the AssistantTestClaude project at /Users/andreas/Documents/Tools/VSCode/AssistantTestClaude.
+
+Your task is to complete the following:
+
+Find all places in the codebase where email notifications might be sent and add error logging to each one. 
+1. Search for any email-related functions, services, or references
+2. Add try-except blocks with proper error logging
+3. Log should include timestamp, error details, and context
+
+Make sure you find ALL email-related code, not just obvious ones.
+
+Please implement this task. Show me what files you're searching and what changes you're making.
