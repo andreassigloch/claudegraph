@@ -8,7 +8,12 @@
       "Bash(npm install:*)",
       "Bash(docker exec:*)",
       "Bash(neo4j-admin cypher-shell:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(mv:*)",
+      "Bash(true)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

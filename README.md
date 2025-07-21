@@ -1,291 +1,113 @@
 # ClaudeGraph v3
 
+**Author:** Andreas Sigloch (andreas@siglochconsulting.com)
+
 **Ultra-Simple Architectural Compliance for Claude Code**
 
-ClaudeGraph v3 is a markdown-based compliance system that ensures code changes don't violate documented business flows. It replaces complex graph databases with simple Flow → Function → Schema definitions.
+ClaudeGraph v3 is a markdown-based compliance system that ensures code changes don't violate documented business flows. It uses simple Flow → Function → Schema definitions that leverage Claude's powerful vector search capabilities.
 
-## Overview
+## 🎯 Core Concepts
 
-ClaudeGraph v3 leverages Claude's native vector search by:
-- **Documenting business flows** in simple markdown format
-- **Checking compliance** after code changes
-- **Maintaining abstraction** at the business level
-- **Storing structure** in Neo4j graph database
-- **Providing intelligent queries** for impact analysis
-- **Enabling design-first** development workflows
-
-## Key Features
-
-### 🔍 Reverse Engineering
-- Parse existing Python codebases
-- Extract functions, flows, and dependencies
-- Identify actors and system boundaries
-- Generate architecture graphs automatically
-
-### 🎨 Forward Engineering
-- Design architecture before coding
-- Create ontology-compliant structures
-- Generate code scaffolding from graphs
-- Maintain architecture-code synchronization
-
-### 📊 Impact Analysis
-- Analyze change impacts before implementation
-- Trace dependencies across components
-- Identify affected tests and requirements
-- Assess architectural risks
-
-### 🔎 Architecture Queries
-- Natural language to Cypher translation
-- Pattern-based architecture exploration
-- Consistency validation and health checks
-- Real-time architectural insights
-
-## Architecture
-
-```
-Claude Code ↔ Neo4j MCP ↔ Neo4j Database
-     ↕
-ClaudeGraph Tools:
-- grphzer (code analysis)
-- Prompt templates
-- Query patterns
-- Ontology validation
+### 1. Flows
+Business processes as function chains:
+```markdown
+Flow:UserRegistration -> F:ValidateInput(S:UserData) -> F:CreateAccount(S:Account) -> F:SendWelcome(S:Email)
 ```
 
-## Quick Start
+### 2. Functions  
+Business operations (NOT implementation details):
+- ✅ `F:ProcessPayment` (what it does)
+- ❌ `F:_calculate_tax()` (how it's coded)
 
-### 1. Setup Environment
+### 3. Schemas
+Data contracts with optional fields and enums:
+```markdown
+S:Order{id:int, items:list, total:float, status:enum[pending,paid,shipped], notes:str?}
+```
+
+## 📋 Commands
+
+### `/flow-init`
+Interactive setup for new projects - creates initial flow.md based on your use cases
+
+### `/flow-check`
+Analyze code changes for compliance violations
 ```bash
-# Clone and setup
-cd /Users/andreas/Documents/Projekte/ClaudeGraph
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Start Neo4j
-docker-compose up -d
+/flow-check
+# Reports schema drift, flow breaks, missing abstractions
 ```
 
-### 2. Load Ontology
+### `/flow-update` 
+Update flow.md while maintaining business abstraction
 ```bash
-# Load schema into Neo4j
-docker exec -it claudegraph-neo4j cypher-shell -u neo4j -p claudegraph -f /import/ontology/load_ontology.cypher
+/flow-update
+# Ensures proper documentation without technical details
 ```
 
-### 3. First Analysis
+### `/flow-find <keyword>`
+Search flows, functions, and schemas
 ```bash
-# Analyze existing project
-python -m commands.grph_architect analyze /path/to/project --store-neo4j
-
-# Or use Claude Code command (short syntax)
-/claudegraph analyze /path/to/project
-
-# Or use legacy command
-/command GrphArchitect analyze /path/to/project
+/flow-find payment
+# Finds all payment-related business logic
 ```
 
-## Claude Code Integration
+## 🛠️ Setup
 
-### Commands Available
-
-#### `/claudegraph design` (New Short Syntax)
-Create architecture for new projects:
-- Interactive design process
-- Ontology-compliant structure
-- Code scaffolding generation
-
-#### `/claudegraph analyze [path]`
-Extract architecture from existing code:
-- grphzer-powered analysis
-- Automatic graph generation
-- Neo4j storage
-
-#### `/claudegraph query --pattern [pattern] | --cypher [query]`
-Query architecture:
-- Natural language patterns
-- Direct Cypher queries
-- Structured insights
-
-#### `/claudegraph impact [component]`
-Analyze change impacts:
-- Direct and transitive dependencies
-- Test implications
-- Risk assessment
-
-#### `/claudegraph check`
-Validate architecture:
-- Ontology compliance
-- Structural integrity
-- Quality metrics
-
-#### Legacy `/command GrphArchitect` syntax
-All commands still available with full syntax for compatibility.
-
-## Ontology Schema
-
-Based on v1.1.0 with these key node types:
-
-- **SYS**: System containers
-- **UC**: Use cases
-- **ACTOR**: External entities
-- **FCHAIN**: Function chains
-- **FUNC**: Individual functions
-- **REQ**: Requirements
-- **TEST**: Test cases
-- **MOD**: Code modules
-- **SCHEMA**: Data structures
-
-## Use Cases
-
-### 1. New Project Development
-```
-1. /claudegraph design
-   → Interactive architecture design
-   → Define system structure
-   → Generate code scaffolding
-
-2. Implement functions
-   → Follow architecture blueprint
-   → Maintain graph synchronization
-
-3. Continuous validation
-   → /claudegraph check
-   → Ensure ontology compliance
+1. **Initialize your project flows:**
+```bash
+/flow-init
+# Interactive setup - define your use cases and flows
 ```
 
-### 2. Legacy Code Understanding
-```
-1. /claudegraph analyze
-   → Extract current architecture
-   → Identify patterns and issues
-
-2. /claudegraph query
-   → Explore system structure
-   → Understand dependencies
-
-3. Plan improvements
-   → /claudegraph impact
-   → Safe refactoring decisions
+2. **Copy commands to `.claude/commands/`:**
+```bash
+cp commands/*.md /path/to/project/.claude/commands/
 ```
 
-### 3. Change Impact Analysis
-```
-Before changes:
-→ /claudegraph impact [component]
-→ Understand what will be affected
-→ Plan testing strategy
-
-After changes:
-→ Auto-update architecture graph
-→ Validate consistency
-→ Update documentation
+3. **Use in Claude Code:**
+```bash
+/flow-check    # Check compliance
+/flow-update   # Update documentation  
+/flow-find api # Find API-related flows
 ```
 
-## Configuration
+## 💡 Real Value: Compliance Checking
 
-### Docker Neo4j
-```yaml
-# docker-compose.yml
-services:
-  neo4j:
-    image: neo4j:5.15
-    ports:
-      - "7475:7474"  # Web UI (shifted to avoid conflict)
-      - "7688:7687"  # Bolt (shifted to avoid conflict)
-    environment:
-      - NEO4J_AUTH=neo4j/claudegraph
+ClaudeGraph v3 provides **architectural governance**:
+
+1. **Schema Drift Detection**: Identifies when code diverges from documented contracts
+2. **Flow Violation Alerts**: Catches when functions are called outside defined flows  
+3. **Missing Documentation**: Highlights undocumented business processes
+4. **Impact Analysis**: Shows which flows are affected by changes
+
+### Example
+```bash
+/flow-check
+
+# Output:
+Schema Violations:
+- S:VisualizationRequest missing chart_type field
+- Chart type validation flow not documented
+
+Recommendations:
+- Update S:VisualizationRequest{..., chart_type:enum[bar,matrix,network]?}
+- Add F:ValidateChartType to visualization flow
 ```
 
-### Project Configuration
-```yaml
-# .claudegraph/config.yaml
-project:
-  name: "MyProject"
-  ontology_version: "1.1.0"
-  auto_sync: true
+## 📝 Why v3?
 
-neo4j:
-  uri: "bolt://localhost:7688"
-  username: "neo4j"
-  password: "claudegraph"
+**Simple is better:**
+- No databases, no AST parsing, no complex tooling
+- Just markdown + Claude's vector search
+- Focus on business architecture, not technical details
+- Compliance checking provides real value
 
-analysis:
-  flow_detection: true
-  actor_detection: true
-  fchain_generation: true
-```
-
-## Example Queries
-
-### Architecture Overview
-```cypher
-MATCH (s:SYS)-[:compose*]->(n)
-RETURN s.Name as system, 
-       labels(n) as components,
-       count(n) as count
-```
-
-### Impact Analysis
-```cypher
-MATCH (c:FUNC {Name: 'SearchAgent'})
-MATCH (c)-[*1..3]-(affected)
-RETURN affected.Name as impacted_component,
-       labels(affected) as types
-```
-
-### Test Coverage
-```cypher
-MATCH (r:REQ)
-OPTIONAL MATCH (r)-[:verify]->(t:TEST)
-RETURN r.Name as requirement,
-       CASE WHEN t IS NULL THEN 'No Test' ELSE t.Name END as test_status
-```
-
-## Reference Projects
-
-ClaudeGraph has been tested with:
-- **AiSE_Test**: Flask application with Neo4j and WebSocket
-- **grphzer**: Code analysis tool with AST parsing
-- **ClaudeGraph**: Self-analysis and architecture validation
-
-## Development
-
-### Project Structure
-```
-ClaudeGraph/
-├── analyzer/           # grphzer integration
-├── commands/           # /command GrphArchitect
-├── neo4j_client/       # Neo4j operations
-├── ontology/           # Schema and constraints
-├── prompts/            # Claude Code templates
-├── docker-compose.yml  # Neo4j setup
-├── requirements.txt    # Dependencies
-└── CLAUDE.md          # Claude Code instructions
-```
-
-### Contributing
-1. Follow ontology schema v1.1.0 strictly
-2. Use prompt templates for consistent behavior
-3. Test with reference projects
-4. Validate against architectural rules
+**The best graph database is no graph database - just markdown and semantic search.**
 
 ## License
 
 MIT License - See LICENSE file for details.
 
-## Citation
-
-If you use ClaudeGraph in your development workflow:
-
-```bibtex
-@software{claudegraph,
-  title={ClaudeGraph: Graph-based Architecture Intelligence},
-  author={Andreas Sigloch},
-  year={2025},
-  url={https://github.com/andreas/claudegraph}
-}
-```
-
 ---
 
-**ClaudeGraph makes architecture visible, queryable, and actionable for intelligent development decisions.**
+*ClaudeGraph v3: Because architecture should be simple to document and hard to violate.*
